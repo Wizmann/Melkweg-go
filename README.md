@@ -1,2 +1,2 @@
 # Melkweg-go
-Golang port of Project Melkweg
+Golang port for Project Melkweg
