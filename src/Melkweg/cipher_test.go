@@ -1,4 +1,4 @@
-package Cipher
+package Melkweg
 
 import (
     "bytes"
