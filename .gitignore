@@ -13,3 +13,7 @@
 
 # Vim tmp files
 *.sw[mnop]
+
+pkg/
+bin/
+src/github.com
