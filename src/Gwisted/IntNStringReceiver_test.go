@@ -3,11 +3,12 @@ package Gwisted
 import (
     "bytes"
     "encoding/binary"
+    "fmt"
     "testing"
 )
 
 type FakeTransport struct {
-    Buffer []data
+    Buffer []byte
     IsConnectionLost bool
 }
 
@@ -27,18 +28,25 @@ type MyLineReceiver struct {
 }
 
 func NewMyLineReceiver() *MyLineReceiver {
-    return &IntNStringReceiver {
-        isStopped: false,
-        isPaused: false,
-        buffer: NewBuffer(make([]byte, 100 * 1024)),
-        conn: &FakeTransport,
+    buffer := make([]byte, 0)
+    r := &MyLineReceiver {
+        IntNStringReceiver: IntNStringReceiver {
+            isStopped: false,
+            isPaused: false,
+            buffer: bytes.NewBuffer(buffer),
+            readerCh: make(chan []byte),
+            transport: &FakeTransport{},
 
-        strSize: -1,
-        prefixSize: 4,
-        parsePrefix: binary.BigEndian.Uint32
-        makePrefix: binary.BigEndian.PutUint32
-        maxLength = 99999
+            strSize: 99999,
+            prefixSize: 4,
+            parsePrefix: binary.BigEndian.Uint32,
+            makePrefix: binary.BigEndian.PutUint32,
+            maxLength: 99999,
+        },
     }
+    r.LineReceivedHandler = r
+
+    return r
 }
 
 func (self *MyLineReceiver) LineReceived(data []byte) {
@@ -52,8 +60,10 @@ func TestLineReceiverProtocol(t *testing.T) {
     binary.BigEndian.PutUint32(prefix, 6)
     line := []byte("arbeit")
 
-    r.dataReceived(append(prefix, line))
+    r.dataReceived(append(prefix, line...))
 
+    fmt.Println(r.strSize)
+    fmt.Println(len(r.Line))
     if (bytes.Compare(r.Line, line) != 0) {
         t.Error()
     }
