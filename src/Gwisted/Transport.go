@@ -18,6 +18,13 @@ type Transport struct {
     mu   *sync.Mutex{}
 }
 
+func NewTransport(conn *TcpConn) *Transport {
+    return &Transport {
+        Conn: conn,
+        mu: &sync.Mutex{},
+    }
+}
+
 func (self *Transport) Write(data []byte) error {
     _, err = self.Conn.Write(data)
     return err
