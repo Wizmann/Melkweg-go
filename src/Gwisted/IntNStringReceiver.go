@@ -1,7 +1,5 @@
 package Gwisted
 
-// TODO: use int replace uint32
-
 import (
     "bytes"
     "errors"
@@ -20,36 +18,35 @@ type IntNStringReceiver struct {
     readerCh    chan []byte
     transport   ITransport
 
-    strSize     uint32
-    prefixSize  uint32
-    parsePrefix func([]byte) uint32
-    makePrefix  func([]byte, uint32)
-    maxLength   uint32
+    strSize     int
+    prefixSize  int
+    parsePrefix func([]byte) int
+    makePrefix  func([]byte, int)
+    maxLength   int
 
     LineReceivedHandler ILineReceivedHandler
 }
 
 func (self *IntNStringReceiver) dataReceived(data []byte) {
-    dataLength := uint32(len(data))
-    bufferLength := uint32(self.buffer.Len())
-
-    if (dataLength + bufferLength > self.maxLength) {
+    if (len(data) + self.buffer.Len() > self.maxLength) {
         self.lengthLimitExceeded()
         return
     }
 
     self.buffer.Write(data)
-    bufferLength = uint32(self.buffer.Len())
 
-    if (self.strSize >= self.maxLength && bufferLength >= self.prefixSize) {
+    if (self.strSize >= self.maxLength && self.buffer.Len() >= self.prefixSize) {
         prefixBytes := make([]byte, self.prefixSize)
         self.buffer.Read(prefixBytes)
         self.strSize = self.parsePrefix(prefixBytes)
+
+        if (self.strSize < 0 || self.strSize > self.maxLength) {
+            self.lengthLimitExceeded()
+            return;
+        }
     }
 
-    bufferLength = uint32(self.buffer.Len())
-
-    if (bufferLength < self.strSize) {
+    if (self.buffer.Len() < self.strSize) {
         return
     }
 
@@ -74,15 +71,14 @@ func (self *IntNStringReceiver) lengthLimitExceeded() {
 }
 
 func (self *IntNStringReceiver) SendString(data []byte) (err error) {
-    dataLength := uint32(len(data))
-    if (dataLength + self.prefixSize > self.maxLength) {
+    if (len(data) + self.prefixSize > self.maxLength) {
         return errors.New(
                 fmt.Sprintf("Try to send %d bytes whereas max size limit is %d",
-                    uint32(len(data)) + self.prefixSize, self.maxLength))
+                    len(data) + self.prefixSize, self.maxLength))
     }
 
     prefix := make([]byte, self.prefixSize)
-    self.makePrefix(prefix, uint32(len(data)))
+    self.makePrefix(prefix, len(data))
     self.transport.Write(append(prefix, data...))
     return nil;
 }

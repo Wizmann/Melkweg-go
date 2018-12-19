@@ -39,8 +39,12 @@ func NewMyLineReceiver() *MyLineReceiver {
 
             strSize: 99999,
             prefixSize: 4,
-            parsePrefix: binary.BigEndian.Uint32,
-            makePrefix: binary.BigEndian.PutUint32,
+            parsePrefix: func(buffer []byte) int {
+                return int(binary.BigEndian.Uint32(buffer))
+            },
+            makePrefix: func(buffer []byte, prefix int) {
+                binary.BigEndian.PutUint32(buffer, uint32(prefix))
+            },
             maxLength: 99999,
         },
     }
@@ -65,6 +69,24 @@ func TestLineReceiverProtocol(t *testing.T) {
     fmt.Println(r.strSize)
     fmt.Println(len(r.Line))
     if (bytes.Compare(r.Line, line) != 0) {
+        t.Error()
+    }
+
+    r.Line = nil
+
+    binary.BigEndian.PutUint32(prefix, 10)
+    r.dataReceived(prefix)
+    if (r.Line != nil) {
+        t.Error();
+    }
+
+    r.dataReceived([]byte("hello"))
+    if (r.Line != nil) {
+        t.Error();
+    }
+
+    r.dataReceived(append([]byte("world"), prefix...))
+    if (bytes.Compare(r.Line, []byte("helloworld")) != 0) {
         t.Error()
     }
 }
