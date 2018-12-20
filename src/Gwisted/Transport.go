@@ -1,45 +1,52 @@
 package Gwisted
 
 import (
+    "fmt"
     "net"
     "sync"
-}
+)
 
 type ITransport interface {
     Write(data []byte) error
     WriteSequence(seq [][]byte) error
     LoseConnection()
-    GetPeer() Addr
-    GetHost() Addr
+    GetPeer() net.Addr
+    GetHost() net.Addr
 }
 
 type Transport struct {
-    Conn *TCPConn
-    mu   *sync.Mutex{}
+    conn *net.TCPConn
+    mu   *sync.Mutex
+    protocol IProtocol
 }
 
-func NewTransport(conn *TcpConn) *Transport {
+func NewTransport(conn *net.TCPConn, protocol IProtocol) *Transport {
     return &Transport {
-        Conn: conn,
+        conn: conn,
         mu: &sync.Mutex{},
+        protocol: protocol,
     }
 }
 
 func (self *Transport) Write(data []byte) error {
-    _, err = self.Conn.Write(data)
+    _, err := self.conn.Write(data)
     return err
 }
 
 func (self *Transport) LoseConnection() {
-    self.Conn.Close()
+    fmt.Println("lose connection")
+    self.conn.Close()
+    self.conn = nil
+    // FIXME
+    self.protocol.ConnectionLost("")
 }
 
-func (self *Transport) GetPeer() Addr {
-    return self.Conn.RemoteAddr()
+func (self *Transport) GetPeer() net.Addr {
+    return self.conn.RemoteAddr()
 }
 
-func (self *Transport) GetHost() Addr {
-    return self.Conn.LocalAddr()
+func (self *Transport) GetHost() net.Addr {
+    return self.conn.LocalAddr()
 }
 
 func (self *Transport) WriteSequence(seq [][]byte) error {

@@ -1,7 +1,7 @@
 package Gwisted
 
 import (
-    "net"
+    "fmt"
 )
 
 type IDataReceivedHandler interface {
@@ -12,22 +12,50 @@ type IConnectionMadeHandler interface {
     ConnectionMade()
 }
 
-type Protocol interface {
+type IConnectionLostHandler interface {
+    ConnectionLost(reason string)
+}
+
+type IProtocol interface {
+    IDataReceivedHandler
+    IConnectionMadeHandler
+    IConnectionLostHandler
+}
+
+type Protocol struct {
     transport *Transport
     connected int
 
     DataReceivedHandler IDataReceivedHandler
     ConnectionMadeHandler IConnectionMadeHandler
+    ConnectionLostHandler IConnectionLostHandler
 }
 
 func NewProtocol() *Protocol {
     return &Protocol {
         transport: nil,
-        connected: 0
+        connected: 0,
 
         DataReceivedHandler: nil,
         ConnectionMadeHandler: nil,
+        ConnectionLostHandler: nil,
     }
+}
+
+func (self *Protocol) Start() {
+    buf := make([]byte, 99999)
+    go func() {
+        //FIXME
+        for self.transport.conn != nil {
+            n, err := self.transport.conn.Read(buf)
+            if (err == nil) {
+                self.DataReceived(buf[:n])
+            } else {
+                fmt.Println(err)
+                self.transport.LoseConnection()
+            }
+        }
+    }()
 }
 
 func (self *Protocol) makeConnection(transport *Transport) {
@@ -52,3 +80,11 @@ func (self *Protocol) DataReceived(data []byte) {
     }
 }
 
+func (self *Protocol) ConnectionLost(reason string) {
+    self.connected = 0
+    if (self.ConnectionLostHandler != nil) {
+        self.ConnectionLostHandler.ConnectionLost(reason)
+    } else {
+        // pass
+    }
+}

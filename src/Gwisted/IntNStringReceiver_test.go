@@ -3,11 +3,11 @@ package Gwisted
 import (
     "bytes"
     "encoding/binary"
-    "fmt"
     "testing"
 )
 
 type FakeTransport struct {
+    Transport
     Buffer []byte
     IsConnectionLost bool
 }
@@ -66,8 +66,6 @@ func TestLineReceiverProtocol(t *testing.T) {
 
     r.dataReceived(append(prefix, line...))
 
-    fmt.Println(r.strSize)
-    fmt.Println(len(r.Line))
     if (bytes.Compare(r.Line, line) != 0) {
         t.Error()
     }
