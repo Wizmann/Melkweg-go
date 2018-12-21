@@ -8,6 +8,19 @@ type ProtocolFactory struct {
     protocolBuilder func(tcp *net.TCPConn) IProtocol
 }
 
+func ProtocolFactoryForProtocol(protocolCtor func() IProtocol) *ProtocolFactory {
+    return &ProtocolFactory {
+        protocolBuilder: func(tcp *net.TCPConn) IProtocol {
+            p := protocolCtor()
+            t := NewTransport(tcp, p)
+            p.SetTransport(t)
+            p.ConnectionMade()
+            p.Start()
+            return p
+        },
+    }
+}
+
 func NewProtocolFactory(protocolBuilder func(tcp *net.TCPConn) IProtocol) *ProtocolFactory {
     return &ProtocolFactory {
         protocolBuilder: protocolBuilder,

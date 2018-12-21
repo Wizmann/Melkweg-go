@@ -81,15 +81,26 @@ func NewMyClientProtocol(port int) *MyClientProtocol{
 func TestPingPongProtocol(t *testing.T) {
     var server *MyServerProtocol
     var client *MyClientProtocol
-    go func() {
-        server = NewMyServerProtocol(10000)
-        server.Start()
-    }()
 
-    go func() {
-        client = NewMyClientProtocol(10000)
-        client.Start()
-    }()
+    reactor := Reactor{}
+    reactor.ListenTCP(
+        10000,
+        ProtocolFactoryForProtocol(func() IProtocol { 
+                                       server = &MyServerProtocol{}
+                                       return server
+                                   }), 
+        50)
+
+    time.Sleep(time.Millisecond * 500)
+
+    reactor.ConnectTCP(
+        "", 
+        10000, 
+        ProtocolFactoryForProtocol(func() IProtocol { 
+                                       client = &MyClientProtocol{}
+                                       return client
+                                   }),
+        60)
 
     time.Sleep(time.Millisecond * 500)
 

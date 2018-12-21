@@ -1,9 +1,5 @@
 package Gwisted
 
-import (
-    "fmt"
-)
-
 type IDataReceivedHandler interface {
     DataReceived(data []byte)
 }
@@ -20,6 +16,9 @@ type IProtocol interface {
     IDataReceivedHandler
     IConnectionMadeHandler
     IConnectionLostHandler
+
+    SetTransport(t *Transport)
+    Start()
 }
 
 type Protocol struct {
@@ -45,18 +44,20 @@ func NewProtocol() *Protocol {
 func (self *Protocol) Start() {
     buf := make([]byte, 65536)
     go func() {
-        //FIXME
         for {
             n, err := self.transport.conn.Read(buf)
             if (err == nil) {
                 self.DataReceived(buf[:n])
             } else {
-                fmt.Println(err)
-                self.ConnectionLost("")
+                self.ConnectionLost(err.Error())
                 break
             }
         }
     }()
+}
+
+func (self *Protocol) SetTransport(t *Transport) {
+    self.transport = t;
 }
 
 func (self *Protocol) makeConnection(transport *Transport) {
