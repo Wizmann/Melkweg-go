@@ -46,13 +46,14 @@ func (self *Protocol) Start() {
     buf := make([]byte, 99999)
     go func() {
         //FIXME
-        for self.transport.conn != nil {
+        for {
             n, err := self.transport.conn.Read(buf)
             if (err == nil) {
                 self.DataReceived(buf[:n])
             } else {
                 fmt.Println(err)
-                self.transport.LoseConnection()
+                self.ConnectionLost("")
+                break
             }
         }
     }()

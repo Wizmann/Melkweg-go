@@ -95,7 +95,7 @@ func TestPingPongProtocol(t *testing.T) {
     time.Sleep(time.Second * 1)
 
     for i := 0; i <= 3; i++ {
-        if (server.transport.conn == nil && client.transport.conn == nil) {
+        if (server.connected == 0 && client.connected == 0) {
             break;
         }
         fmt.Println(i)

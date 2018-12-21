@@ -36,9 +36,6 @@ func (self *Transport) Write(data []byte) error {
 func (self *Transport) LoseConnection() {
     fmt.Println("lose connection")
     self.conn.Close()
-    self.conn = nil
-    // FIXME
-    self.protocol.ConnectionLost("")
 }
 
 func (self *Transport) GetPeer() net.Addr {
