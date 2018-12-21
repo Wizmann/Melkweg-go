@@ -1,7 +1,7 @@
 package Gwisted
 
 type Reactor struct {
-    ctrlCh <- chan int
+    ctrlCh chan int
 }
 
 func (self *Reactor) Start() {
@@ -14,7 +14,7 @@ func (self *Reactor) Start() {
 }
 
 func (self *Reactor) Stop() {
-    self.ctrlCh <- false
+    self.ctrlCh <- -1
 }
 
 

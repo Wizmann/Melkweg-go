@@ -43,7 +43,7 @@ func NewProtocol() *Protocol {
 }
 
 func (self *Protocol) Start() {
-    buf := make([]byte, 99999)
+    buf := make([]byte, 65536)
     go func() {
         //FIXME
         for {

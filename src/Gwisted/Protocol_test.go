@@ -3,6 +3,7 @@ package Gwisted
 import (
     "bytes"
     "fmt"
+    log "github.com/sirupsen/logrus"
     "net"
     "testing"
     "time"
@@ -13,7 +14,7 @@ type MyServerProtocol struct {
 }
 
 func (self *MyServerProtocol) DataReceived(data []byte) {
-    fmt.Println("server data received ", data)
+    log.Debug("server data received: ", data)
     if (bytes.Compare(data, []byte("ping")) == 0) {
         self.transport.Write([]byte("pong"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -27,12 +28,12 @@ type MyClientProtocol struct {
 }
 
 func (self *MyClientProtocol) ConnectionMade() {
-    fmt.Println("client connection made")
+    log.Debug("client connection made")
     self.transport.Write([]byte("ping"))
 }
 
 func (self *MyClientProtocol) DataReceived(data []byte) {
-    fmt.Println("client data received ", data)
+    log.Debug("client data received ", data)
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.transport.Write([]byte("exit"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -46,14 +47,14 @@ func NewMyServerProtocol(port int) *MyServerProtocol {
 
     l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if (err != nil) {
-        fmt.Println("TCP listen error: ", err)
+        log.Fatal("TCP listen error: ", err)
     }
-    fmt.Println("TCP listen")
+    log.Debug("TCP listen")
     conn, err := l.Accept()
     if (err != nil) {
-        fmt.Println("TCP accept error: ", err)
+        log.Fatal("TCP accept error: ", err)
     }
-    fmt.Println("TCP accept")
+    log.Debug("TCP accept")
 
     t := NewTransport(conn.(*net.TCPConn), p)
 
@@ -68,7 +69,7 @@ func NewMyClientProtocol(port int) *MyClientProtocol{
 
     conn, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
     if (err != nil) {
-        fmt.Println("TCP dail error: ", err)
+        log.Fatal("TCP dail error: ", err)
     }
 
     t := NewTransport(conn.(*net.TCPConn), p)
@@ -85,23 +86,20 @@ func TestPingPongProtocol(t *testing.T) {
         server.Start()
     }()
 
-    time.Sleep(time.Second * 1)
-
     go func() {
         client = NewMyClientProtocol(10000)
         client.Start()
     }()
 
-    time.Sleep(time.Second * 1)
+    time.Sleep(time.Millisecond * 500)
 
     for i := 0; i <= 3; i++ {
         if (server.connected == 0 && client.connected == 0) {
             break;
         }
-        fmt.Println(i)
         if (i == 3) {
             t.Error();
         }
-        time.Sleep(time.Second * 1)
+        time.Sleep(time.Millisecond * 500)
     }
 }
