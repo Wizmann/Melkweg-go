@@ -1,7 +1,6 @@
 package Gwisted
 
 import (
-    "fmt"
     "net"
     "sync"
 )
@@ -12,6 +11,7 @@ type ITransport interface {
     LoseConnection()
     GetPeer() net.Addr
     GetHost() net.Addr
+    GetConnection() *net.TCPConn
 }
 
 type Transport struct {
@@ -34,7 +34,7 @@ func (self *Transport) Write(data []byte) error {
 }
 
 func (self *Transport) LoseConnection() {
-    fmt.Println("lose connection")
+    log.Debug("lose connection")
     self.conn.Close()
 }
 
@@ -44,6 +44,10 @@ func (self *Transport) GetPeer() net.Addr {
 
 func (self *Transport) GetHost() net.Addr {
     return self.conn.LocalAddr()
+}
+
+func (self *Transport) GetConnection() *net.TCPConn {
+    return self.conn;
 }
 
 func (self *Transport) WriteSequence(seq [][]byte) error {

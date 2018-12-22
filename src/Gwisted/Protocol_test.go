@@ -2,9 +2,8 @@ package Gwisted
 
 import (
     "bytes"
-    "fmt"
-    log "github.com/sirupsen/logrus"
-    "net"
+    "encoding/binary"
+    _ "fmt"
     "testing"
     "time"
 )
@@ -41,68 +40,42 @@ func (self *MyClientProtocol) DataReceived(data []byte) {
     }
 }
 
-func NewMyServerProtocol(port int) *MyServerProtocol {
+func NewMyServerProtocol() *MyServerProtocol {
     p := &MyServerProtocol{}
     p.DataReceivedHandler = p
-
-    l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-    if (err != nil) {
-        log.Fatal("TCP listen error: ", err)
-    }
-    log.Debug("TCP listen")
-    conn, err := l.Accept()
-    if (err != nil) {
-        log.Fatal("TCP accept error: ", err)
-    }
-    log.Debug("TCP accept")
-
-    t := NewTransport(conn.(*net.TCPConn), p)
-
-    p.transport = t
     return p
 }
 
-func NewMyClientProtocol(port int) *MyClientProtocol{
+func NewMyClientProtocol() *MyClientProtocol{
     p := &MyClientProtocol{}
     p.ConnectionMadeHandler = p
     p.DataReceivedHandler = p
-
-    conn, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
-    if (err != nil) {
-        log.Fatal("TCP dail error: ", err)
-    }
-
-    t := NewTransport(conn.(*net.TCPConn), p)
-    p.transport = t
-    p.ConnectionMade()
     return p
 }
 
 func TestPingPongProtocol(t *testing.T) {
-    var server *MyServerProtocol
-    var client *MyClientProtocol
+    server := NewMyServerProtocol()
+    client := NewMyClientProtocol()
+
+    if (server == nil || client == nil) {
+        t.Error()
+    }
 
     reactor := Reactor{}
     reactor.ListenTCP(
-        10000,
-        ProtocolFactoryForProtocol(func() IProtocol { 
-                                       server = &MyServerProtocol{}
-                                       return server
-                                   }), 
+        11000,
+        ProtocolFactoryForProtocol(func() IProtocol { return server }),
         50)
 
-    time.Sleep(time.Millisecond * 500)
+    time.Sleep(time.Millisecond * 10)
 
     reactor.ConnectTCP(
         "", 
-        10000, 
-        ProtocolFactoryForProtocol(func() IProtocol { 
-                                       client = &MyClientProtocol{}
-                                       return client
-                                   }),
+        11000, 
+        ProtocolFactoryForProtocol(func() IProtocol { return client }),
         60)
 
-    time.Sleep(time.Millisecond * 500)
+    time.Sleep(time.Millisecond * 10)
 
     for i := 0; i <= 3; i++ {
         if (server.connected == 0 && client.connected == 0) {
@@ -111,6 +84,110 @@ func TestPingPongProtocol(t *testing.T) {
         if (i == 3) {
             t.Error();
         }
-        time.Sleep(time.Millisecond * 500)
+        time.Sleep(time.Millisecond * 50)
+    }
+}
+
+type MyLineServerProtocol struct {
+    IntNStringReceiver
+}
+
+func (self *MyLineServerProtocol) LineReceived(data []byte) {
+    log.Debug("server data received: ", data)
+    if (bytes.Compare(data, []byte("ping")) == 0) {
+        self.SendLine([]byte("pong"))
+    } else if (bytes.Compare(data, []byte("exit")) == 0) {
+        self.SendLine([]byte("exit"))
+        self.transport.LoseConnection()
+    }
+}
+
+type MyLineClientProtocol struct {
+    IntNStringReceiver
+}
+
+func (self *MyLineClientProtocol) ConnectionMade() {
+    log.Debug("client connection made")
+    self.SendLine([]byte("ping"))
+}
+
+func (self *MyLineClientProtocol) LineReceived(data []byte) {
+    log.Debug("client data received ", data)
+    if (bytes.Compare(data, []byte("pong")) == 0) {
+        self.SendLine([]byte("exit"))
+    } else if (bytes.Compare(data, []byte("exit")) == 0) {
+        self.transport.LoseConnection()
+    }
+}
+
+func NewMyLineServerProtocol() *MyLineServerProtocol {
+    p := &MyLineServerProtocol {
+        IntNStringReceiver: IntNStringReceiver {
+            buffer: bytes.NewBuffer([]byte("")),
+            strSize: 99999,
+            prefixSize: 4,
+            parsePrefix: func(buffer []byte) int {
+                return int(binary.BigEndian.Uint32(buffer))
+            },
+            makePrefix: func(buffer []byte, prefix int) {
+                binary.BigEndian.PutUint32(buffer, uint32(prefix))
+            },
+            maxLength: 99999,
+        },
+    }
+    p.DataReceivedHandler = p
+    p.LineReceivedHandler = p
+    return p
+}
+
+func NewMyLineClientProtocol() *MyLineClientProtocol {
+    p := &MyLineClientProtocol {
+        IntNStringReceiver: IntNStringReceiver {
+            buffer: bytes.NewBuffer([]byte("")),
+            strSize: 99999,
+            prefixSize: 4,
+            parsePrefix: func(buffer []byte) int {
+                return int(binary.BigEndian.Uint32(buffer))
+            },
+            makePrefix: func(buffer []byte, prefix int) {
+                binary.BigEndian.PutUint32(buffer, uint32(prefix))
+            },
+            maxLength: 99999,
+        },
+    }
+    p.ConnectionMadeHandler = p
+    p.DataReceivedHandler = p
+    p.LineReceivedHandler = p
+    return p
+}
+
+func TestIntNLineProtocol(t *testing.T) {
+    server := NewMyLineServerProtocol()
+    client := NewMyLineClientProtocol()
+
+    reactor := Reactor{}
+    reactor.ListenTCP(
+        10000,
+        ProtocolFactoryForProtocol(func() IProtocol { return server }),
+        50)
+
+    time.Sleep(time.Millisecond * 10)
+
+    reactor.ConnectTCP(
+        "", 
+        10000, 
+        ProtocolFactoryForProtocol(func() IProtocol { return client }),
+        60)
+
+    time.Sleep(time.Millisecond * 10)
+
+    for i := 0; i <= 3; i++ {
+        if (server.connected == 0 && client.connected == 0) {
+            break;
+        }
+        if (i == 3) {
+            t.Error();
+        }
+        time.Sleep(time.Millisecond * 50)
     }
 }

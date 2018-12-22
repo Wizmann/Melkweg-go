@@ -12,11 +12,9 @@ type ILineReceivedHandler interface {
 }
 
 type IntNStringReceiver struct {
-    isStopped   bool
-    isPaused    bool
+    Protocol
+    
     buffer      *bytes.Buffer
-    readerCh    chan []byte
-    transport   ITransport
 
     strSize     int
     prefixSize  int
@@ -27,7 +25,8 @@ type IntNStringReceiver struct {
     LineReceivedHandler ILineReceivedHandler
 }
 
-func (self *IntNStringReceiver) dataReceived(data []byte) {
+func (self *IntNStringReceiver) DataReceived(data []byte) {
+    log.Debug("[IntNStringReceiver] DataReceived: ", data)
     if (len(data) + self.buffer.Len() > self.maxLength) {
         self.lengthLimitExceeded()
         return
@@ -63,14 +62,17 @@ func (self *IntNStringReceiver) LineReceived(data []byte) {
     } else {
         // pass
     }
-
 }
 
 func (self *IntNStringReceiver) lengthLimitExceeded() {
     self.transport.LoseConnection()
 }
 
-func (self *IntNStringReceiver) SendString(data []byte) (err error) {
+func (self *IntNStringReceiver) SendString(str string) error {
+    return self.SendLine([]byte(str))
+}
+
+func (self *IntNStringReceiver) SendLine(data []byte) error {
     if (len(data) + self.prefixSize > self.maxLength) {
         return errors.New(
                 fmt.Sprintf("Try to send %d bytes whereas max size limit is %d",

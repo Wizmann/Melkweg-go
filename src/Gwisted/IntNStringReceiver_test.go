@@ -31,12 +31,7 @@ func NewMyLineReceiver() *MyLineReceiver {
     buffer := make([]byte, 0)
     r := &MyLineReceiver {
         IntNStringReceiver: IntNStringReceiver {
-            isStopped: false,
-            isPaused: false,
             buffer: bytes.NewBuffer(buffer),
-            readerCh: make(chan []byte),
-            transport: &FakeTransport{},
-
             strSize: 99999,
             prefixSize: 4,
             parsePrefix: func(buffer []byte) int {
@@ -49,6 +44,7 @@ func NewMyLineReceiver() *MyLineReceiver {
         },
     }
     r.LineReceivedHandler = r
+    r.transport = &FakeTransport{}
 
     return r
 }
@@ -64,7 +60,7 @@ func TestLineReceiverProtocol(t *testing.T) {
     binary.BigEndian.PutUint32(prefix, 6)
     line := []byte("arbeit")
 
-    r.dataReceived(append(prefix, line...))
+    r.DataReceived(append(prefix, line...))
 
     if (bytes.Compare(r.Line, line) != 0) {
         t.Error()
@@ -73,17 +69,17 @@ func TestLineReceiverProtocol(t *testing.T) {
     r.Line = nil
 
     binary.BigEndian.PutUint32(prefix, 10)
-    r.dataReceived(prefix)
+    r.DataReceived(prefix)
     if (r.Line != nil) {
         t.Error();
     }
 
-    r.dataReceived([]byte("hello"))
+    r.DataReceived([]byte("hello"))
     if (r.Line != nil) {
         t.Error();
     }
 
-    r.dataReceived(append([]byte("world"), prefix...))
+    r.DataReceived(append([]byte("world"), prefix...))
     if (bytes.Compare(r.Line, []byte("helloworld")) != 0) {
         t.Error()
     }

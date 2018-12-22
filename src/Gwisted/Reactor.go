@@ -2,7 +2,6 @@ package Gwisted
 
 import (
     "fmt"
-    log "github.com/sirupsen/logrus"
     "net"
 )
 
@@ -27,13 +26,13 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
     go func() {
         l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
         if (err != nil) {
-            log.Error("listen TCP on port %d error!", port)
+            log.Errorf("listen TCP on port %d error: %s!", port, err.Error())
             return
         }
         for {
             conn, err := l.Accept()
             if (err != nil) {
-                log.Error("accept TCP on port %d error!", port)
+                log.Errorf("accept TCP on port %d error!", port)
                 continue
             }
             _ = factory.BuildProtocol(conn.(*net.TCPConn))
