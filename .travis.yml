@@ -1,0 +1,8 @@
+sudo: false
+language: go
+go: 1.10.x
+before_install:
+    sh env.sh
+    sh init.sh
+install: true
+script: sh test.sh
