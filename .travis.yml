@@ -2,6 +2,6 @@ sudo: false
 language: go
 go: 1.10.x
 script:
-    - source.env.sh
+    - source env.sh
     - bash init.sh
     - bash test.sh
