@@ -2,6 +2,7 @@ package Gwisted
 
 import (
     "bytes"
+    "encoding/binary"
     "errors"
     "fmt"
     _ "net"
@@ -57,6 +58,7 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
+    log.Debug("[IntNStringReceiver] LineReceived: ", data)
     if (self.LineReceivedHandler != nil) {
         self.LineReceivedHandler.LineReceived(data);
     } else {
@@ -83,4 +85,27 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
     self.makePrefix(prefix, len(data))
     self.transport.Write(append(prefix, data...))
     return nil;
+}
+
+type Int32StringReceiver struct {
+    IntNStringReceiver
+}
+
+func NewInt32StringReceiver() *Int32StringReceiver {
+    r := &Int32StringReceiver {
+        IntNStringReceiver: IntNStringReceiver {
+            buffer: bytes.NewBuffer([]byte("")),
+            strSize: 99999,
+            prefixSize: 4,
+            parsePrefix: func(buffer []byte) int {
+                return int(binary.BigEndian.Uint32(buffer))
+            },
+            makePrefix: func(buffer []byte, prefix int) {
+                binary.BigEndian.PutUint32(buffer, uint32(prefix))
+            },
+            maxLength: 99999,
+        },
+    }
+    r.DataReceivedHandler = r
+    return r
 }

@@ -2,8 +2,8 @@ package Gwisted
 
 import (
     "bytes"
-    "encoding/binary"
     _ "fmt"
+    _ "encoding/binary"
     "testing"
     "time"
 )
@@ -89,7 +89,7 @@ func TestPingPongProtocol(t *testing.T) {
 }
 
 type MyLineServerProtocol struct {
-    IntNStringReceiver
+    *Int32StringReceiver
 }
 
 func (self *MyLineServerProtocol) LineReceived(data []byte) {
@@ -103,7 +103,7 @@ func (self *MyLineServerProtocol) LineReceived(data []byte) {
 }
 
 type MyLineClientProtocol struct {
-    IntNStringReceiver
+    *Int32StringReceiver
 }
 
 func (self *MyLineClientProtocol) ConnectionMade() {
@@ -121,42 +121,15 @@ func (self *MyLineClientProtocol) LineReceived(data []byte) {
 }
 
 func NewMyLineServerProtocol() *MyLineServerProtocol {
-    p := &MyLineServerProtocol {
-        IntNStringReceiver: IntNStringReceiver {
-            buffer: bytes.NewBuffer([]byte("")),
-            strSize: 99999,
-            prefixSize: 4,
-            parsePrefix: func(buffer []byte) int {
-                return int(binary.BigEndian.Uint32(buffer))
-            },
-            makePrefix: func(buffer []byte, prefix int) {
-                binary.BigEndian.PutUint32(buffer, uint32(prefix))
-            },
-            maxLength: 99999,
-        },
-    }
+    p := &MyLineServerProtocol { NewInt32StringReceiver() }
     p.DataReceivedHandler = p
     p.LineReceivedHandler = p
     return p
 }
 
 func NewMyLineClientProtocol() *MyLineClientProtocol {
-    p := &MyLineClientProtocol {
-        IntNStringReceiver: IntNStringReceiver {
-            buffer: bytes.NewBuffer([]byte("")),
-            strSize: 99999,
-            prefixSize: 4,
-            parsePrefix: func(buffer []byte) int {
-                return int(binary.BigEndian.Uint32(buffer))
-            },
-            makePrefix: func(buffer []byte, prefix int) {
-                binary.BigEndian.PutUint32(buffer, uint32(prefix))
-            },
-            maxLength: 99999,
-        },
-    }
+    p := &MyLineClientProtocol { NewInt32StringReceiver() }
     p.ConnectionMadeHandler = p
-    p.DataReceivedHandler = p
     p.LineReceivedHandler = p
     return p
 }

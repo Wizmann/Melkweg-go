@@ -17,7 +17,7 @@ type IProtocol interface {
     IConnectionMadeHandler
     IConnectionLostHandler
 
-    SetTransport(t ITransport)
+    makeConnection(t ITransport)
     Start()
 }
 
@@ -56,14 +56,11 @@ func (self *Protocol) Start() {
     }()
 }
 
-func (self *Protocol) SetTransport(t ITransport) {
-    self.transport = t;
-}
-
-func (self *Protocol) makeConnection(transport *Transport) {
+func (self *Protocol) makeConnection(transport ITransport) {
     self.connected = 1
     self.transport = transport
     self.ConnectionMade()
+    self.Start()
 }
 
 func (self *Protocol) ConnectionMade() {
