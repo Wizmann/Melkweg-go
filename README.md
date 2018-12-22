@@ -1,5 +1,8 @@
 # Melkweg-go
+
 Golang port for Project Melkweg
+
+[![Build Status](https://travis-ci.org/Wizmann/Melkweg-go.svg?branch=master)](https://travis-ci.org/Wizmann/Melkweg-go)
 
 ## Some Rules
 
