@@ -2,6 +2,6 @@ sudo: false
 language: go
 go: 1.10.x
 script:
-    - source env.sh
+    - export GOPATH=${TRAVIS_HOME}/gopath/src/github.com/Wizmann/Melkweg-go
     - bash init.sh
     - bash test.sh
