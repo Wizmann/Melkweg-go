@@ -1,8 +1,7 @@
 sudo: false
 language: go
 go: 1.10.x
-before_install:
-    - source env.sh && bash init.sh
-install: true
 script:
-    - source env.sh && bash test.sh
+    - source.env.sh
+    - bash init.sh
+    - bash test.sh
