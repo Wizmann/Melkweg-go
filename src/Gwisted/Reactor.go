@@ -9,7 +9,13 @@ type Reactor struct {
     ctrlCh chan int
 }
 
-func (self *Reactor) Start() {
+func newReactor() *Reactor {
+    return &Reactor {
+        ctrlCh: make(chan int),
+    }
+}
+
+func (self *Reactor) Run() {
     for {
         select {
         case <- self.ctrlCh:
@@ -41,10 +47,14 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
 }
 
 func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
-    conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
+    c := NewClientConnector(host, port, timeout)
+    factory.SetConnector(c)
+    conn, err := c.Connect()
     if (err != nil) {
-        log.Error("dial TCP error on ", host, ":", port)
+        factory.ClientConnectionLost(err)
         return nil, err
     }
-    return factory.BuildProtocol(conn.(*net.TCPConn)), nil
+    return factory.BuildProtocol(conn), nil
 }
+
+var reactor = newReactor()

@@ -67,7 +67,7 @@ func (self *IntNStringReceiver) LineReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) lengthLimitExceeded() {
-    self.transport.LoseConnection()
+    self.Transport.LoseConnection()
 }
 
 func (self *IntNStringReceiver) SendString(str string) error {
@@ -83,7 +83,7 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
 
     prefix := make([]byte, self.prefixSize)
     self.makePrefix(prefix, len(data))
-    self.transport.Write(append(prefix, data...))
+    self.Transport.Write(append(prefix, data...))
     return nil;
 }
 

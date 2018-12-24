@@ -44,7 +44,7 @@ func NewMyLineReceiver() *MyLineReceiver {
         },
     }
     r.LineReceivedHandler = r
-    r.transport = &FakeTransport{}
+    r.Transport = &FakeTransport{}
 
     return r
 }

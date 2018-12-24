@@ -22,7 +22,7 @@ type IProtocol interface {
 }
 
 type Protocol struct {
-    transport ITransport
+    Transport ITransport
     connected int
 
     DataReceivedHandler IDataReceivedHandler
@@ -32,7 +32,7 @@ type Protocol struct {
 
 func NewProtocol() *Protocol {
     return &Protocol {
-        transport: nil,
+        Transport: nil,
         connected: 0,
 
         DataReceivedHandler: nil,
@@ -45,7 +45,7 @@ func (self *Protocol) Start() {
     buf := make([]byte, 65536)
     go func() {
         for {
-            n, err := self.transport.GetConnection().Read(buf)
+            n, err := self.Transport.GetConnection().Read(buf)
             if (err == nil) {
                 self.DataReceived(buf[:n])
             } else {
@@ -58,7 +58,7 @@ func (self *Protocol) Start() {
 
 func (self *Protocol) makeConnection(transport ITransport) {
     self.connected = 1
-    self.transport = transport
+    self.Transport = transport
     self.ConnectionMade()
     self.Start()
 }

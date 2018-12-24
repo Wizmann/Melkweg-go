@@ -4,12 +4,18 @@ import (
     "sync"
 )
 
-var mu Sync.Mutex
-
 type Config struct {
     key string
     timeout int
+
+    serverAddr string
+    serverPort int
+
+    clientOutgoingConnectionNum int
 }
+
+var mu sync.Mutex
+var configInstance *Config
 
 // TODO: read config from file
 func newConfig() *Config {
@@ -20,16 +26,28 @@ func (self *Config) GetKey() string {
     return self.key
 }
 
-func (self *Config) GetTimeout() string {
+func (self *Config) GetTimeout() int {
     return self.timeout
 }
 
-func GetInstance() *singleton {
+func (self *Config) GetServerAddr() string {
+    return self.serverAddr
+}
+
+func (self *Config) GetServerPort() int {
+    return self.serverPort
+}
+
+func (self *Config) GetClientOutgoingConnectionNum() int {
+    return self.clientOutgoingConnectionNum
+}
+
+func GetConfigInstance() *Config {
     mu.Lock()
     defer mu.Unlock()
 
-    if (instance == nil) {
-        instance = newConfig()
+    if (configInstance == nil) {
+        configInstance = newConfig()
     }
-    return instance
+    return configInstance
 }

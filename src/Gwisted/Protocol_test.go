@@ -15,10 +15,10 @@ type MyServerProtocol struct {
 func (self *MyServerProtocol) DataReceived(data []byte) {
     log.Debug("server data received: ", data)
     if (bytes.Compare(data, []byte("ping")) == 0) {
-        self.transport.Write([]byte("pong"))
+        self.Transport.Write([]byte("pong"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
-        self.transport.Write([]byte("exit"))
-        self.transport.LoseConnection()
+        self.Transport.Write([]byte("exit"))
+        self.Transport.LoseConnection()
     }
 }
 
@@ -28,15 +28,15 @@ type MyClientProtocol struct {
 
 func (self *MyClientProtocol) ConnectionMade() {
     log.Debug("client connection made")
-    self.transport.Write([]byte("ping"))
+    self.Transport.Write([]byte("ping"))
 }
 
 func (self *MyClientProtocol) DataReceived(data []byte) {
     log.Debug("client data received ", data)
     if (bytes.Compare(data, []byte("pong")) == 0) {
-        self.transport.Write([]byte("exit"))
+        self.Transport.Write([]byte("exit"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 }
 
@@ -98,7 +98,7 @@ func (self *MyLineServerProtocol) LineReceived(data []byte) {
         self.SendLine([]byte("pong"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
         self.SendLine([]byte("exit"))
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 }
 
@@ -116,7 +116,7 @@ func (self *MyLineClientProtocol) LineReceived(data []byte) {
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.SendLine([]byte("exit"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 }
 
