@@ -1,12 +1,16 @@
 package Melkweg
 
+import (
+    "fmt"
+)
+
 const (
-    UNKNOWN uint32 = iota
-    DATA
-    LIV
-    RST
-    FIN
-    KILL
+    UNKNOWN = 0
+    DATA = 1
+    LIV = 2
+    RST = 3
+    FIN = 4
+    KILL = 5
 )
 
 func NewSynPacket(iv []byte) *MPacket {
@@ -15,9 +19,9 @@ func NewSynPacket(iv []byte) *MPacket {
     }
 }
 
-func NewRstPacket(port uint32) *MPacket {
+func NewRstPacket(port int) *MPacket {
     return &MPacket {
-        Port: port,
+        Port: uint32(port),
         Flags: RST,
     }
 }
@@ -28,18 +32,18 @@ func NewKillPacket() *MPacket {
     }
 }
 
-func NewDataPacket(port uint32, data []byte) *MPacket {
+func NewDataPacket(port int, data []byte) *MPacket {
     return &MPacket {
         Flags: DATA,
-        Port: port,
+        Port: uint32(port),
         Data: data,
     }
 }
 
-func NewFinPacket(port uint32) *MPacket {
+func NewFinPacket(port int) *MPacket {
     return &MPacket {
         Flags: FIN,
-        Port: port,
+        Port: uint32(port),
     }
 }
 
@@ -47,4 +51,18 @@ func NewLivPacket() *MPacket {
     return &MPacket {
         Flags: LIV,
     }
+}
+
+func PacketToString(packet *MPacket) string {
+    switch packet.Flags {
+    case DATA:
+        return fmt.Sprintf("[Data Packet] %d bytes", len(packet.Data))
+    case LIV:
+        return fmt.Sprintf("[Liv Packet]")
+    case FIN:
+        return fmt.Sprintf("[Fin Packet] on port %d", packet.Port)
+    case RST:
+        return fmt.Sprintf("[Rst Packet] on port %d", packet.Port)
+    }
+    return "[Packet]"
 }

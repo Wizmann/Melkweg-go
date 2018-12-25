@@ -27,7 +27,6 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    log.Debug("[IntNStringReceiver] DataReceived: ", data)
     if (len(data) + self.buffer.Len() > self.maxLength) {
         self.lengthLimitExceeded()
         return
@@ -58,7 +57,6 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
-    log.Debug("[IntNStringReceiver] LineReceived: ", data)
     if (self.LineReceivedHandler != nil) {
         self.LineReceivedHandler.LineReceived(data);
     } else {

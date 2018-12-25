@@ -2,6 +2,8 @@ package Melkweg
 
 import (
     "bytes"
+    "encoding/hex"
+    "fmt"
     "testing"
 )
 
@@ -32,4 +34,20 @@ func TestAESCipher(t *testing.T) {
     if (bytes.Compare(decrypted, []byte("bar")) != 0) {
         t.Error()
     }
+}
+
+func TestAESCipherWithServer(t *testing.T) {
+    iv := []byte("0123456789abcdef")
+    key := []byte("abcdef0123456789")
+    cipher := NewAESCipher2(iv, key)
+
+    encrypted1 := cipher.Encrypt([]byte("hello"))
+    fmt.Println(hex.EncodeToString(encrypted1))
+
+    if (hex.EncodeToString(encrypted1) != "8f07011604") {
+        t.Errorf("%s not equal to %s", hex.EncodeToString(encrypted1), "6e89335a12")
+    }
+    // encrypted2 := cipher.Encrypt([]byte("hello"))
+
+    // encrypted3 := cipher.Encrypt([]byte("world"))
 }

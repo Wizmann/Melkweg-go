@@ -17,7 +17,8 @@ type IProtocol interface {
     IConnectionMadeHandler
     IConnectionLostHandler
 
-    makeConnection(t ITransport)
+    MakeConnection(t ITransport)
+    GetTransport() ITransport
     Start()
 }
 
@@ -56,7 +57,7 @@ func (self *Protocol) Start() {
     }()
 }
 
-func (self *Protocol) makeConnection(transport ITransport) {
+func (self *Protocol) MakeConnection(transport ITransport) {
     self.connected = 1
     self.Transport = transport
     self.ConnectionMade()
@@ -72,7 +73,6 @@ func (self *Protocol) ConnectionMade() {
 }
 
 func (self *Protocol) DataReceived(data []byte) {
-    log.Debug("[Protocol] DataReceived: ", data)
     if (self.DataReceivedHandler != nil) {
         self.DataReceivedHandler.DataReceived(data)
     } else {
@@ -87,4 +87,8 @@ func (self *Protocol) ConnectionLost(reason string) {
     } else {
         // pass
     }
+}
+
+func (self *Protocol) GetTransport() ITransport {
+    return self.Transport
 }

@@ -1,19 +1,24 @@
 package main
 
 import (
+    "encoding/hex"
+    . "Gwisted"
     . "Melkweg"
+    "time"
     Utils "Melkweg/Utils"
 )
 
 type MelkwegClientProtocol struct {
     *ProtocolBase
 
+    heartbeatTimeout int
     heartbeatTimer *time.Timer
 }
 
-func NewMelkwegClientProtocol() *MelkwegClientProtocol {
+func NewMelkwegClientProtocol() IProtocol {
     p := &MelkwegClientProtocol {
-        Protocol: NewProtocolBase(),
+        ProtocolBase: NewProtocolBase(),
+        heartbeatTimeout: GetConfigInstance().GetHeartbeatTimeout(),
     }
     p.LineReceivedOnRunningHandler = p
     p.LineReceivedOnReadyHandler = p
@@ -23,56 +28,58 @@ func NewMelkwegClientProtocol() *MelkwegClientProtocol {
 }
 
 func (self *MelkwegClientProtocol) ConnectionMade() {
-    log.Debug("connection is made")
-    self.write(PacketFactory.CreateSynPacket(self.iv))
+    log.Infof("send iv: %s", hex.EncodeToString(self.Iv))
+    self.Write(NewSynPacket(self.Iv))
 }
 
-func (self *MelkwegClientProtocol) ConnectionLost() {
-    for port, protocol := range self.outgoing { 
-        protocol.transport.LoseConnection()
+func (self *MelkwegClientProtocol) ConnectionLost(reason string) {
+    for _, protocol := range self.Outgoing { 
+        protocol.GetTransport().LoseConnection()
     }
 }
 
-func (self *MelkwegClientProtocol) HandleDataPacket(packet) {
-    port := packet.GetPort()
+func (self *MelkwegClientProtocol) HandleDataPacket(packet *MPacket) {
+    port := int(packet.GetPort())
+    log.Debugf("packet is for port: %d", port)
 
-    if protocol, ok := self.outgoing[port]; ok {
-        protocol.transport.write(packet.GetData())
+    if protocol, ok := self.Outgoing[port]; ok {
+        protocol.GetTransport().Write(packet.GetData())
     } else {
-        self.write(PacketFactory.CreateRstPacket(port))
+        self.Write(NewRstPacket(port))
     }
 }
 
 func (self *MelkwegClientProtocol) LineReceivedOnReady(packet *MPacket) {
-    if (packet.iv != nil) {
-        self.peerCipher = NewAESCipher(self.key, packet.iv)
-        log.Infof("get iv from: %s from %s", packet.iv, self.transport.getPeer())
-        self.state = RUNNING
+    if (packet.GetIv() != nil) {
+        self.PeerCipher = NewAESCipher(packet.GetIv(), self.Key)
+        log.Infof("get iv: %s from %s", hex.EncodeToString(packet.GetIv()), self.GetTransport().GetPeer())
+        self.State = RUNNING
+        self.ResetTimeout()
         self.heartbeat()
-        self.resetTimeout()
     } else {
-        self.handleError()
+        self.HandleError()
     }
 }
 
 func (self *MelkwegClientProtocol) LineReceivedOnRunning(packet *MPacket) {
-    if (packet.flags == DATA) {
+    log.Debugf("packet received on running: %s", PacketToString(packet))
+    if (packet.GetFlags() == DATA) {
         self.HandleDataPacket(packet)
-    } else if (packet.flags == RST || packet.flags == FIN) {
+    } else if (packet.GetFlags() == RST || packet.GetFlags() == FIN) {
         // will not happen on client side
-        log.Warnf("connection on port %d will be terminated", packet.GetPort())
-    } else if (packet.flags == LIV) {
+        log.Warningf("connection on port %d will be terminated", packet.GetPort())
+    } else if (packet.GetFlags() == LIV) {
         prevTime := Utils.GetTimestamp()
-        log.Warnf("[HEARTBEAT] ping = %d ms", Utils.GetTimestamp() - prevTime)
+        log.Warningf("[HEARTBEAT] ping = %d ms", Utils.GetTimestamp() - prevTime)
     } else {
-        self.handleError()
+        self.HandleError()
     }
 }
 
 func (self *MelkwegClientProtocol) heartbeat() {
-    packet := PacketFactory.CreateLivPacket()
+    packet := NewLivPacket()
     packet.ClientTime = Utils.GetTimestamp()
-    self.write(packet)
-    heartbeatTimer = time.AfterFunc(time.Millisecond * time.Duration(timeout), self.heartbeat)
+    self.Write(packet)
+    self.heartbeatTimer = time.AfterFunc(time.Millisecond * time.Duration(self.heartbeatTimeout), self.heartbeat)
 }
 

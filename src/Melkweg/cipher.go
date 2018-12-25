@@ -4,6 +4,7 @@ import (
     "crypto/aes"
     "crypto/cipher"
     "crypto/md5"
+    _ "encoding/hex"
     "fmt"
     "math/rand"
 )
@@ -41,6 +42,17 @@ type AESCipher struct {
 
 func NewAESCipher(iv []byte, key string) *AESCipher {
     block, err := aes.NewCipher(DigestString(key))
+    if (err != nil) {
+        panic(err)
+    }
+    return &AESCipher {
+        iv: iv,
+        stream: cipher.NewCTR(block, iv),
+    }
+}
+
+func NewAESCipher2(iv []byte, key []byte) *AESCipher {
+    block, err := aes.NewCipher(key)
     if (err != nil) {
         panic(err)
     }

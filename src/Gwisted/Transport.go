@@ -9,8 +9,8 @@ type ITransport interface {
     Write(data []byte) error
     WriteSequence(seq [][]byte) error
     LoseConnection()
-    GetPeer() net.TCPAddr
-    GetHost() net.TCPAddr
+    GetPeer() *net.TCPAddr
+    GetHost() *net.TCPAddr
     GetConnection() *net.TCPConn
 }
 
@@ -38,11 +38,11 @@ func (self *Transport) LoseConnection() {
     self.conn.Close()
 }
 
-func (self *Transport) GetPeer() net.TCPAddr {
+func (self *Transport) GetPeer() *net.TCPAddr {
     return self.conn.RemoteAddr().(*net.TCPAddr)
 }
 
-func (self *Transport) GetHost() net.TCPAddr {
+func (self *Transport) GetHost() *net.TCPAddr {
     return self.conn.LocalAddr().(*net.TCPAddr)
 }
 

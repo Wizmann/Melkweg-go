@@ -5,13 +5,14 @@ import (
 )
 
 type Config struct {
-    key string
-    timeout int
+    Key string
+    Timeout int
+    HeartbeatTimeout int
 
-    serverAddr string
-    serverPort int
+    ServerAddr string
+    ServerPort int
 
-    clientOutgoingConnectionNum int
+    ClientOutgoingConnectionNum int
 }
 
 var mu sync.Mutex
@@ -23,23 +24,27 @@ func newConfig() *Config {
 }
 
 func (self *Config) GetKey() string {
-    return self.key
+    return self.Key
 }
 
 func (self *Config) GetTimeout() int {
-    return self.timeout
+    return self.Timeout
+}
+
+func (self *Config) GetHeartbeatTimeout() int {
+    return self.HeartbeatTimeout
 }
 
 func (self *Config) GetServerAddr() string {
-    return self.serverAddr
+    return self.ServerAddr
 }
 
 func (self *Config) GetServerPort() int {
-    return self.serverPort
+    return self.ServerPort
 }
 
 func (self *Config) GetClientOutgoingConnectionNum() int {
-    return self.clientOutgoingConnectionNum
+    return self.ClientOutgoingConnectionNum
 }
 
 func GetConfigInstance() *Config {

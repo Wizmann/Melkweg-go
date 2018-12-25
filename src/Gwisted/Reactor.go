@@ -28,7 +28,7 @@ func (self *Reactor) Stop() {
     self.ctrlCh <- -1
 }
 
-func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) {
+func (self *Reactor) ListenTCP(port int, factory IProtocolFactory, backlog int) {
     go func() {
         l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
         if (err != nil) {
@@ -41,12 +41,15 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
                 log.Errorf("accept TCP on port %d error!", port)
                 continue
             }
-            _ = factory.BuildProtocol(conn.(*net.TCPConn))
+            p := factory.BuildProtocol(conn.(*net.TCPConn))
+            log.Debugf("new connection from %s:%d", 
+                p.GetTransport().GetHost().IP,
+                p.GetTransport().GetHost().Port)
         }
     }()
 }
 
-func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
+func (self *Reactor) ConnectTCP(host string, port int, factory IProtocolFactory, timeout int) (IProtocol, error) {
     c := NewClientConnector(host, port, timeout)
     factory.SetConnector(c)
     conn, err := c.Connect()
@@ -57,4 +60,4 @@ func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory,
     return factory.BuildProtocol(conn), nil
 }
 
-var reactor = newReactor()
+var ReactorInstance = newReactor()
