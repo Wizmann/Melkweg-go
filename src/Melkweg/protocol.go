@@ -52,6 +52,7 @@ func NewProtocolBase() *ProtocolBase {
         Timeout: config.GetTimeout(),
         Iv: DigestBytes(Nonce(19)),
         State: READY,
+        Outgoing: map[int]Gwisted.IProtocol{},
         mu: &sync.Mutex{},
     }
     p.setTimeout()
@@ -84,6 +85,24 @@ func (self *ProtocolBase) Write(packet *MPacket) error {
     }
 
     return nil;
+}
+
+func (self *ProtocolBase) SetPeer(protocol Gwisted.IProtocol, port int) {
+    mu.Lock()
+    defer mu.Unlock()
+
+    log.Debugf("set peer for port %d", port)
+    self.Outgoing[port] = protocol
+}
+
+func (self *ProtocolBase) RemovePeer(port int) {
+    mu.Lock()
+    defer mu.Unlock()
+
+    log.Debugf("remove peer for port %d", port)
+    if _, ok := self.Outgoing[port]; ok {
+        delete(self.Outgoing, port)
+    }
 }
 
 func (self *ProtocolBase) setTimeout() {

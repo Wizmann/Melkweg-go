@@ -20,15 +20,13 @@ func (self *ClientLocalProxyProtocol) DataReceived(data []byte) {
 }
 
 func (self *ClientLocalProxyProtocol) ConnectionLost(reason string) {
-    port := self.Transport.GetHost().Port
+    port := self.Transport.GetPeer().Port
     if (reason == "ConnectionReset") {
         self.clientProtocol.Write(NewRstPacket(port))
     } else {
         self.clientProtocol.Write(NewFinPacket(port))
     }
-    if _, ok := self.clientProtocol.Outgoing[port]; ok {
-        delete(self.clientProtocol.Outgoing, port)
-    }
+    self.clientProtocol.RemovePeer(port)
 }
 
 func NewClientLocalProxyProtocol(clientProtocol *MelkwegClientProtocol, conn *net.TCPConn) *ClientLocalProxyProtocol {
@@ -84,7 +82,9 @@ func (self *ClientLocalProxyProtocolFactory) BuildProtocol(tcp *net.TCPConn) IPr
         panic("outgoing protocol is nil")
     }
 
-    return NewClientLocalProxyProtocol(outgoing, tcp)
+    p := NewClientLocalProxyProtocol(outgoing, tcp)
+    outgoing.SetPeer(p, p.GetTransport().GetPeer().Port)
+    return p
 }
 
 func main() {

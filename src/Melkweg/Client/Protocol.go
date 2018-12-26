@@ -71,8 +71,10 @@ func (self *MelkwegClientProtocol) LineReceivedOnRunning(packet *MPacket) {
     } else if (packet.GetFlags() == LIV) {
         prevTime := Utils.GetTimestamp()
         log.Warningf("[HEARTBEAT] ping = %d ms", Utils.GetTimestamp() - prevTime)
+        self.ResetTimeout()
     } else {
         self.HandleError()
+        return
     }
 }
 
