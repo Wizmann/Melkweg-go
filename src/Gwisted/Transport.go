@@ -1,6 +1,7 @@
 package Gwisted
 
 import (
+    "errors"
     "net"
     "sync"
 )
@@ -29,6 +30,9 @@ func NewTransport(conn *net.TCPConn, protocol IProtocol) *Transport {
 }
 
 func (self *Transport) Write(data []byte) error {
+    if (!self.protocol.IsConnected()) {
+        return errors.New("Connection is finished or reset")
+    }
     _, err := self.conn.Write(data)
     return err
 }

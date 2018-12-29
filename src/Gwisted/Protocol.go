@@ -23,6 +23,7 @@ type IProtocol interface {
 
     MakeConnection(t ITransport)
     GetTransport() ITransport
+    IsConnected() bool
     Start()
 }
 
@@ -58,8 +59,10 @@ func (self *Protocol) PauseProducing() {
 }
 
 func (self *Protocol) ResumeProducing() {
+    log.Debug("protocol is resuming")
     self.isPaused = false
     self.pauseCh <- 1
+    log.Debug("protocol is resumed")
 }
 
 func (self *Protocol) Start() {
@@ -70,6 +73,7 @@ func (self *Protocol) Start() {
                 log.Debug("protocol is paused")
                 _ = <-self.pauseCh
             }
+            log.Debug("protocol is running")
             n, err := self.Transport.GetConnection().Read(buf)
             if (err == nil) {
                 self.DataReceived(buf[:n])
@@ -105,13 +109,19 @@ func (self *Protocol) DataReceived(data []byte) {
 }
 
 func (self *Protocol) ConnectionLost(reason error) {
+    log.Errorf("connection lost because: %s", reason.Error())
     self.connected = 0
+    self.Transport.LoseConnection()
     close(self.pauseCh)
     if (self.ConnectionLostHandler != nil) {
         self.ConnectionLostHandler.ConnectionLost(reason)
     } else {
         // pass
     }
+}
+
+func (self *Protocol) IsConnected() bool {
+    return self.connected == 1
 }
 
 func (self *Protocol) GetTransport() ITransport {

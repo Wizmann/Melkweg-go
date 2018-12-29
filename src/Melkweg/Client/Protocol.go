@@ -77,7 +77,7 @@ func (self *MelkwegClientProtocol) LineReceivedOnRunning(packet *MPacket) {
         // will not happen on client side
         log.Warningf("connection on port %d will be terminated", packet.GetPort())
     } else if (packet.GetFlags() == LIV) {
-        prevTime := Utils.GetTimestamp()
+        prevTime := packet.GetClientTime()
         log.Warningf("[HEARTBEAT] ping = %d ms", Utils.GetTimestamp() - prevTime)
         self.ResetTimeout()
     } else {

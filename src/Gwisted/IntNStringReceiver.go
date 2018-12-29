@@ -46,7 +46,8 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
     }
 
     if (self.buffer.Len() > self.maxLength) {
-        self.PauseProducing()
+        //log.Debugf("protocol pause reducing")
+        //self.PauseProducing()
     }
 
     lineData := make([]byte, self.strSize)
@@ -56,7 +57,7 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
     self.LineReceived(lineData)
 
     if (self.isPaused) {
-        self.ResumeProducing()
+        //self.ResumeProducing()
     }
 }
 
