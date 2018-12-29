@@ -1,2 +1,3 @@
 #!/bin/bash
-go build -o build/client Melkweg/Client 
+source env.sh
+go build -o output/client Melkweg/Client 

@@ -1,10 +1,9 @@
 package Melkweg
 
 import (
-    "encoding/hex"
+    _ "encoding/hex"
     "Gwisted"
     proto "github.com/golang/protobuf/proto"
-    "sync"
     "time"
 )
 
@@ -35,9 +34,8 @@ type ProtocolBase struct {
     State        ProtocolState
     Outgoing     map[int]Gwisted.IProtocol
     Timeout      int
-    timeoutTimer *time.Timer
+    TimeoutTimer *time.Timer
     config       *Config
-    mu           *sync.Mutex
 
     LineReceivedOnRunningHandler  ILineReceivedOnRunningHandler
     LineReceivedOnReadyHandler    ILineReceivedOnReadyHandler
@@ -53,7 +51,6 @@ func NewProtocolBase() *ProtocolBase {
         Iv: DigestBytes(Nonce(19)),
         State: READY,
         Outgoing: map[int]Gwisted.IProtocol{},
-        mu: &sync.Mutex{},
     }
     p.setTimeout()
     p.LineReceivedHandler = p
@@ -64,8 +61,8 @@ func NewProtocolBase() *ProtocolBase {
 }
 
 func (self *ProtocolBase) Write(packet *MPacket) error {
-    mu.Lock()
-    defer mu.Unlock()
+    self.Mu.Lock()
+    defer self.Mu.Unlock()
 
     data, err := proto.Marshal(packet)
     if (err != nil) {
@@ -88,16 +85,16 @@ func (self *ProtocolBase) Write(packet *MPacket) error {
 }
 
 func (self *ProtocolBase) SetPeer(protocol Gwisted.IProtocol, port int) {
-    mu.Lock()
-    defer mu.Unlock()
+    self.Mu.Lock()
+    defer self.Mu.Unlock()
 
     log.Debugf("set peer for port %d", port)
     self.Outgoing[port] = protocol
 }
 
 func (self *ProtocolBase) RemovePeer(port int) {
-    mu.Lock()
-    defer mu.Unlock()
+    self.Mu.Lock()
+    defer self.Mu.Unlock()
 
     log.Debugf("remove peer for port %d", port)
     if _, ok := self.Outgoing[port]; ok {
@@ -106,15 +103,15 @@ func (self *ProtocolBase) RemovePeer(port int) {
 }
 
 func (self *ProtocolBase) setTimeout() {
-    self.timeoutTimer = time.AfterFunc(time.Millisecond * time.Duration(self.Timeout), self.timeoutConnection)
+    self.TimeoutTimer = time.AfterFunc(time.Millisecond * time.Duration(self.Timeout), self.timeoutConnection)
 }
 
 func (self *ProtocolBase) ResetTimeout() {
-    self.timeoutTimer.Reset(time.Millisecond * time.Duration(self.Timeout))
+    self.TimeoutTimer.Reset(time.Millisecond * time.Duration(self.Timeout))
 }
 
 func (self *ProtocolBase) LineReceived(data []byte) {
-    log.Debugf("line received: %s", hex.EncodeToString(data))
+    log.Debugf("line received: %d bytes", len(data))
     packet, err := self.parse(data)
     if (err != nil) {
         log.Error("packet parse error")

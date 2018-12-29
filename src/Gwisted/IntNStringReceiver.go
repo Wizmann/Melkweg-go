@@ -13,8 +13,8 @@ type ILineReceivedHandler interface {
 }
 
 type IntNStringReceiver struct {
-    Protocol
-    
+    *Protocol
+
     buffer      *bytes.Buffer
 
     strSize     int
@@ -27,11 +27,7 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    if (len(data) + self.buffer.Len() > self.maxLength) {
-        self.lengthLimitExceeded()
-        return
-    }
-
+    log.Debugf("IntNStringReceiver data received: %d", len(data))
     self.buffer.Write(data)
 
     if (self.strSize >= self.maxLength && self.buffer.Len() >= self.prefixSize) {
@@ -49,11 +45,19 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
         return
     }
 
+    if (self.buffer.Len() > self.maxLength) {
+        self.PauseProducing()
+    }
+
     lineData := make([]byte, self.strSize)
     self.buffer.Read(lineData)
     self.strSize = self.maxLength
 
     self.LineReceived(lineData)
+
+    if (self.isPaused) {
+        self.ResumeProducing()
+    }
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
@@ -65,6 +69,7 @@ func (self *IntNStringReceiver) LineReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) lengthLimitExceeded() {
+    log.Error("IntNStringReceiver length limit exceeded")
     self.Transport.LoseConnection()
 }
 
@@ -92,6 +97,7 @@ type Int32StringReceiver struct {
 func NewInt32StringReceiver() *Int32StringReceiver {
     r := &Int32StringReceiver {
         IntNStringReceiver: IntNStringReceiver {
+            Protocol: NewProtocol(),
             buffer: bytes.NewBuffer([]byte("")),
             strSize: 99999,
             prefixSize: 4,

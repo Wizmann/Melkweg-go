@@ -19,9 +19,9 @@ func (self *ClientLocalProxyProtocol) DataReceived(data []byte) {
     self.clientProtocol.Write(NewDataPacket(port, data))
 }
 
-func (self *ClientLocalProxyProtocol) ConnectionLost(reason string) {
+func (self *ClientLocalProxyProtocol) ConnectionLost(reason error) {
     port := self.Transport.GetPeer().Port
-    if (reason == "ConnectionReset") {
+    if (reason.Error() == "ConnectionReset") {
         self.clientProtocol.Write(NewRstPacket(port))
     } else {
         self.clientProtocol.Write(NewFinPacket(port))

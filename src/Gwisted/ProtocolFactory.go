@@ -30,14 +30,15 @@ type ProtocolFactory struct {
 }
 
 func ProtocolFactoryForProtocol(protocolCtor func() IProtocol) *ProtocolFactory {
-    return &ProtocolFactory {
-        protocolBuilder: func(tcp *net.TCPConn) IProtocol {
-            p := protocolCtor()
-            t := NewTransport(tcp, p)
-            p.MakeConnection(t)
-            return p
-        },
+    f := &ProtocolFactory {}
+    f.protocolBuilder = func(tcp *net.TCPConn) IProtocol {
+        p := protocolCtor()
+        t := NewTransport(tcp, p)
+        p.MakeConnection(t)
+        p.ConnectionMade(f)
+        return p
     }
+    return f
 }
 
 func NewProtocolFactory(protocolBuilder func(tcp *net.TCPConn) IProtocol) *ProtocolFactory {

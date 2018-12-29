@@ -27,14 +27,22 @@ func NewMelkwegClientProtocol() IProtocol {
     return p
 }
 
-func (self *MelkwegClientProtocol) ConnectionMade() {
+func (self *MelkwegClientProtocol) ConnectionMade(factory IProtocolFactory) {
+    self.Factory = factory
     log.Infof("send iv: %s", hex.EncodeToString(self.Iv))
     self.Write(NewSynPacket(self.Iv))
 }
 
-func (self *MelkwegClientProtocol) ConnectionLost(reason string) {
-    for _, protocol := range self.Outgoing { 
+func (self *MelkwegClientProtocol) ConnectionLost(reason error) {
+    log.Errorf("connectionLost because %s", reason)
+    self.heartbeatTimer.Stop()
+    self.TimeoutTimer.Stop()
+    for _, protocol := range self.Outgoing {
         protocol.GetTransport().LoseConnection()
+    }
+
+    if (self.Factory != nil) {
+        self.Factory.ClientConnectionLost(reason);
     }
 }
 
