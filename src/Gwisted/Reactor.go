@@ -3,6 +3,7 @@ package Gwisted
 import (
     "fmt"
     "net"
+    logging "Logging"
 )
 
 type Reactor struct {
@@ -26,13 +27,13 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
     go func() {
         l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
         if (err != nil) {
-            log.Errorf("listen TCP on port %d error: %s!", port, err.Error())
+            logging.Fatal("listen TCP on port %d error: %s!", port, err.Error())
             return
         }
         for {
             conn, err := l.Accept()
             if (err != nil) {
-                log.Errorf("accept TCP on port %d error!", port)
+                logging.Fatal("accept TCP on port %d error!", port)
                 continue
             }
             _ = factory.BuildProtocol(conn.(*net.TCPConn))
@@ -43,7 +44,7 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
 func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
     conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
     if (err != nil) {
-        log.Error("dial TCP error on ", host, ":", port)
+        logging.Fatal("dial TCP error on ", host, ":", port)
         return nil, err
     }
     return factory.BuildProtocol(conn.(*net.TCPConn)), nil

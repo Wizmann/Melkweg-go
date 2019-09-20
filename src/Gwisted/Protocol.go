@@ -1,5 +1,9 @@
 package Gwisted
 
+import (
+    logging "Logging"
+)
+
 type IDataReceivedHandler interface {
     DataReceived(data []byte)
 }
@@ -72,7 +76,7 @@ func (self *Protocol) ConnectionMade() {
 }
 
 func (self *Protocol) DataReceived(data []byte) {
-    log.Debug("[Protocol] DataReceived: ", data)
+    logging.Debug("DataReceived: ", data)
     if (self.DataReceivedHandler != nil) {
         self.DataReceivedHandler.DataReceived(data)
     } else {

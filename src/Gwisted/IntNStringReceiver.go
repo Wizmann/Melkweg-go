@@ -6,6 +6,7 @@ import (
     "errors"
     "fmt"
     _ "net"
+    logging "Logging"
 )
 
 type ILineReceivedHandler interface {
@@ -14,7 +15,7 @@ type ILineReceivedHandler interface {
 
 type IntNStringReceiver struct {
     Protocol
-    
+
     buffer      *bytes.Buffer
 
     strSize     int
@@ -27,7 +28,7 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    log.Debug("[IntNStringReceiver] DataReceived: ", data)
+    logging.Debug("[IntNStringReceiver] DataReceived: ", data)
     if (len(data) + self.buffer.Len() > self.maxLength) {
         self.lengthLimitExceeded()
         return
@@ -58,7 +59,7 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
-    log.Debug("[IntNStringReceiver] LineReceived: ", data)
+    logging.Debug("[IntNStringReceiver] LineReceived: ", data)
     if (self.LineReceivedHandler != nil) {
         self.LineReceivedHandler.LineReceived(data);
     } else {

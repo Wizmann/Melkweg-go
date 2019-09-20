@@ -3,6 +3,7 @@ package Gwisted
 import (
     "net"
     "sync"
+    logging "Logging"
 )
 
 type ITransport interface {
@@ -34,7 +35,7 @@ func (self *Transport) Write(data []byte) error {
 }
 
 func (self *Transport) LoseConnection() {
-    log.Debug("lose connection")
+    logging.Debug("lose connection")
     self.conn.Close()
 }
 
