@@ -14,7 +14,7 @@ type MyServerProtocol struct {
 }
 
 func (self *MyServerProtocol) DataReceived(data []byte) {
-    logging.Debug("server data received: ", data)
+    logging.Debug("server data received: %x", data)
     if (bytes.Compare(data, []byte("ping")) == 0) {
         self.transport.Write([]byte("pong"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -33,7 +33,7 @@ func (self *MyClientProtocol) ConnectionMade() {
 }
 
 func (self *MyClientProtocol) DataReceived(data []byte) {
-    logging.Debug("client data received ", data)
+    logging.Debug("client data received %x", data)
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.transport.Write([]byte("exit"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -62,15 +62,14 @@ func TestPingPongProtocol(t *testing.T) {
         t.Error()
     }
 
-    reactor := Reactor{}
-    reactor.ListenTCP(
+    Reactor.ListenTCP(
         11000,
         ProtocolFactoryForProtocol(func() IProtocol { return server }),
         50)
 
     time.Sleep(time.Millisecond * 10)
 
-    reactor.ConnectTCP(
+    Reactor.ConnectTCP(
         "", 
         11000, 
         ProtocolFactoryForProtocol(func() IProtocol { return client }),
@@ -94,7 +93,7 @@ type MyLineServerProtocol struct {
 }
 
 func (self *MyLineServerProtocol) LineReceived(data []byte) {
-    logging.Debug("server data received: ", data)
+    logging.Debug("server data received: %x", data)
     if (bytes.Compare(data, []byte("ping")) == 0) {
         self.SendLine([]byte("pong"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -113,7 +112,7 @@ func (self *MyLineClientProtocol) ConnectionMade() {
 }
 
 func (self *MyLineClientProtocol) LineReceived(data []byte) {
-    logging.Debug("client data received ", data)
+    logging.Debug("client data received: %x", data)
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.SendLine([]byte("exit"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -139,15 +138,14 @@ func TestIntNLineProtocol(t *testing.T) {
     server := NewMyLineServerProtocol()
     client := NewMyLineClientProtocol()
 
-    reactor := Reactor{}
-    reactor.ListenTCP(
+    Reactor.ListenTCP(
         10000,
         ProtocolFactoryForProtocol(func() IProtocol { return server }),
         50)
 
     time.Sleep(time.Millisecond * 10)
 
-    reactor.ConnectTCP(
+    Reactor.ConnectTCP(
         "", 
         10000, 
         ProtocolFactoryForProtocol(func() IProtocol { return client }),

@@ -5,6 +5,7 @@ import (
     "encoding/binary"
     "errors"
     "fmt"
+    "math"
     _ "net"
     logging "Logging"
 )
@@ -28,20 +29,24 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    logging.Debug("[IntNStringReceiver] DataReceived: ", data)
+    logging.Debug("DataReceived: %x", data)
     if (len(data) + self.buffer.Len() > self.maxLength) {
+        logging.Warning("String length error for IntNStringReceiver Protocol: %d", len(data) + self.buffer.Len())
         self.lengthLimitExceeded()
         return
     }
 
     self.buffer.Write(data)
 
-    if (self.strSize >= self.maxLength && self.buffer.Len() >= self.prefixSize) {
+    logging.Debug("Line length: %d", self.strSize)
+
+    if (self.strSize == 0 && self.buffer.Len() >= self.prefixSize) {
         prefixBytes := make([]byte, self.prefixSize)
         self.buffer.Read(prefixBytes)
         self.strSize = self.parsePrefix(prefixBytes)
 
-        if (self.strSize < 0 || self.strSize > self.maxLength) {
+        if (self.strSize > self.maxLength) {
+            logging.Warning("String length error for IntNStringReceiver Protocol: %d", self.strSize)
             self.lengthLimitExceeded()
             return;
         }
@@ -53,13 +58,14 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 
     lineData := make([]byte, self.strSize)
     self.buffer.Read(lineData)
-    self.strSize = self.maxLength
 
     self.LineReceived(lineData)
+
+    self.strSize = 0
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
-    logging.Debug("[IntNStringReceiver] LineReceived: ", data)
+    logging.Debug("LineReceived: %x", data)
     if (self.LineReceivedHandler != nil) {
         self.LineReceivedHandler.LineReceived(data);
     } else {
@@ -83,6 +89,7 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
     }
 
     prefix := make([]byte, self.prefixSize)
+    logging.Debug("length of data: %d", len(data))
     self.makePrefix(prefix, len(data))
     self.transport.Write(append(prefix, data...))
     return nil;
@@ -96,7 +103,7 @@ func NewInt32StringReceiver() *Int32StringReceiver {
     r := &Int32StringReceiver {
         IntNStringReceiver: IntNStringReceiver {
             buffer: bytes.NewBuffer([]byte("")),
-            strSize: 99999,
+            strSize: 0,
             prefixSize: 4,
             parsePrefix: func(buffer []byte) int {
                 return int(binary.BigEndian.Uint32(buffer))
@@ -104,7 +111,7 @@ func NewInt32StringReceiver() *Int32StringReceiver {
             makePrefix: func(buffer []byte, prefix int) {
                 binary.BigEndian.PutUint32(buffer, uint32(prefix))
             },
-            maxLength: 99999,
+            maxLength: math.MaxInt32 / 2,
         },
     }
     r.DataReceivedHandler = r

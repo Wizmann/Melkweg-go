@@ -76,7 +76,7 @@ func (self *Protocol) ConnectionMade() {
 }
 
 func (self *Protocol) DataReceived(data []byte) {
-    logging.Debug("DataReceived: ", data)
+    logging.Debug("DataReceived: %x", data)
     if (self.DataReceivedHandler != nil) {
         self.DataReceivedHandler.DataReceived(data)
     } else {

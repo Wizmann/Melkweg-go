@@ -6,11 +6,11 @@ import (
     logging "Logging"
 )
 
-type Reactor struct {
+type ReactorImpl struct {
     ctrlCh chan int
 }
 
-func (self *Reactor) Start() {
+func (self *ReactorImpl) Start() {
     for {
         select {
         case <- self.ctrlCh:
@@ -19,11 +19,11 @@ func (self *Reactor) Start() {
     }
 }
 
-func (self *Reactor) Stop() {
+func (self *ReactorImpl) Stop() {
     self.ctrlCh <- -1
 }
 
-func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) {
+func (self *ReactorImpl) ListenTCP(port int, factory *ProtocolFactory, backlog int) {
     go func() {
         l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
         if (err != nil) {
@@ -41,7 +41,7 @@ func (self *Reactor) ListenTCP(port int, factory *ProtocolFactory, backlog int) 
     }()
 }
 
-func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
+func (self *ReactorImpl) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
     conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
     if (err != nil) {
         logging.Fatal("dial TCP error on ", host, ":", port)
@@ -49,3 +49,11 @@ func (self *Reactor) ConnectTCP(host string, port int, factory *ProtocolFactory,
     }
     return factory.BuildProtocol(conn.(*net.TCPConn)), nil
 }
+
+func newReactorImpl() *ReactorImpl {
+    return &ReactorImpl {
+        ctrlCh: make(chan int),
+    }
+}
+
+var Reactor = newReactorImpl()
