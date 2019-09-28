@@ -31,7 +31,7 @@ func (self *ServerProtocol) LineReceived(data []byte) {
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.SendLine([]byte("ping"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 }
 
@@ -57,11 +57,11 @@ func (self *ClientProtocol) LineReceived(data []byte) {
         self.SendLine([]byte("pong"))
         self.loop -= 1
     } else {
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 
     if (self.loop == 0) {
-        self.transport.LoseConnection()
+        self.Transport.LoseConnection()
     }
 }
 

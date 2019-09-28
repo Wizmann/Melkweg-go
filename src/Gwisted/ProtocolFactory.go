@@ -13,7 +13,7 @@ func ProtocolFactoryForProtocol(protocolCtor func() IProtocol) *ProtocolFactory 
         protocolBuilder: func(tcp *net.TCPConn) IProtocol {
             p := protocolCtor()
             t := NewTransport(tcp, p)
-            p.makeConnection(t)
+            p.MakeConnection(t)
             return p
         },
     }

@@ -16,8 +16,8 @@ func TestDigest(t *testing.T) {
 
 func TestAESCipher(t *testing.T) {
     iv := DigestBytes(Nonce(100))
-    cipher1 := NewAESCipher(iv, "hello world")
-    cipher2 := NewAESCipher(iv, "hello world")
+    cipher1 := NewAESCipher(iv, DigestString("hello world"))
+    cipher2 := NewAESCipher(iv, DigestString("hello world"))
 
     encrypted := cipher1.Encrypt([]byte("foo"))
     decrypted := cipher2.Decrypt(encrypted)

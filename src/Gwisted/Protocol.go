@@ -21,12 +21,13 @@ type IProtocol interface {
     IConnectionMadeHandler
     IConnectionLostHandler
 
-    makeConnection(t ITransport)
+    MakeConnection(t ITransport)
+    IsConnected() bool
     Start()
 }
 
 type Protocol struct {
-    transport ITransport
+    Transport ITransport
     connected int
 
     DataReceivedHandler IDataReceivedHandler
@@ -36,7 +37,7 @@ type Protocol struct {
 
 func NewProtocol() *Protocol {
     return &Protocol {
-        transport: nil,
+        Transport: nil,
         connected: 0,
 
         DataReceivedHandler: nil,
@@ -49,7 +50,7 @@ func (self *Protocol) Start() {
     buf := make([]byte, 65536)
     go func() {
         for {
-            n, err := self.transport.GetConnection().Read(buf)
+            n, err := self.Transport.GetConnection().Read(buf)
             if (err == nil) {
                 self.DataReceived(buf[:n])
             } else {
@@ -60,9 +61,9 @@ func (self *Protocol) Start() {
     }()
 }
 
-func (self *Protocol) makeConnection(transport ITransport) {
+func (self *Protocol) MakeConnection(transport ITransport) {
     self.connected = 1
-    self.transport = transport
+    self.Transport = transport
     self.ConnectionMade()
     self.Start()
 }
@@ -91,4 +92,8 @@ func (self *Protocol) ConnectionLost(reason string) {
     } else {
         // pass
     }
+}
+
+func (self *Protocol) IsConnected() bool {
+    return self.connected == 1
 }

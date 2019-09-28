@@ -6,21 +6,6 @@ import (
     "testing"
 )
 
-type FakeTransport struct {
-    Transport
-    Buffer []byte
-    IsConnectionLost bool
-}
-
-func (self *FakeTransport) Write(data []byte) error {
-    self.Buffer = data
-    return nil
-}
-
-func (self *FakeTransport) LoseConnection() {
-    self.IsConnectionLost = true
-}
-
 type MyLineReceiver struct {
     IntNStringReceiver
 
@@ -44,7 +29,6 @@ func NewMyLineReceiver() *MyLineReceiver {
         },
     }
     r.LineReceivedHandler = r
-    r.transport = &FakeTransport{}
 
     return r
 }

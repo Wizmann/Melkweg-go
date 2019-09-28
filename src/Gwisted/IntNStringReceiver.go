@@ -15,7 +15,7 @@ type ILineReceivedHandler interface {
 }
 
 type IntNStringReceiver struct {
-    Protocol
+    *Protocol
 
     buffer      *bytes.Buffer
 
@@ -74,7 +74,8 @@ func (self *IntNStringReceiver) LineReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) lengthLimitExceeded() {
-    self.transport.LoseConnection()
+    logging.Fatal("length limit exceeded")
+    self.Transport.LoseConnection()
 }
 
 func (self *IntNStringReceiver) SendString(str string) error {
@@ -91,7 +92,7 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
     prefix := make([]byte, self.prefixSize)
     logging.Debug("length of data: %d", len(data))
     self.makePrefix(prefix, len(data))
-    self.transport.Write(append(prefix, data...))
+    self.Transport.Write(append(prefix, data...))
     return nil;
 }
 
@@ -102,6 +103,7 @@ type Int32StringReceiver struct {
 func NewInt32StringReceiver() *Int32StringReceiver {
     r := &Int32StringReceiver {
         IntNStringReceiver: IntNStringReceiver {
+            Protocol: NewProtocol(),
             buffer: bytes.NewBuffer([]byte("")),
             strSize: 0,
             prefixSize: 4,
