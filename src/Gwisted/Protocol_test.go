@@ -27,9 +27,10 @@ type MyClientProtocol struct {
     Protocol
 }
 
-func (self *MyClientProtocol) ConnectionMade() {
+func (self *MyClientProtocol) ConnectionMade(factory IProtocolFactory) {
     logging.Debug("client connection made")
     self.Transport.Write([]byte("ping"))
+    self.Factory = factory
 }
 
 func (self *MyClientProtocol) DataReceived(data []byte) {
@@ -106,7 +107,9 @@ type MyLineClientProtocol struct {
     *Int32StringReceiver
 }
 
-func (self *MyLineClientProtocol) ConnectionMade() {
+func (self *MyLineClientProtocol) ConnectionMade(factory IProtocolFactory) {
+    self.Factory = factory
+
     logging.Debug("client connection made")
     self.SendLine([]byte("ping"))
 }

@@ -21,7 +21,9 @@ func NewServerProtocol() *ServerProtocol {
     return p
 }
 
-func (self *ServerProtocol) ConnectionMade() {
+func (self *ServerProtocol) ConnectionMade(factory IProtocolFactory) {
+    self.Factory = factory
+
     logging.Debug("server connection made")
     self.SendLine([]byte("ping"))
 }

@@ -3,5 +3,6 @@ BASEDIR=`pwd`
 cd - > /dev/null
 
 export GOPATH="$BASEDIR"
-export PATH=$GOPATH/bin:$PATH
+
+[[ ":$PATH:" != *"$GOPATH"* ]] && export PATH="$GOPATH:${PATH}"
 

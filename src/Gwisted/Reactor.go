@@ -42,12 +42,14 @@ func (self *ReactorImpl) ListenTCP(port int, factory *ProtocolFactory, backlog i
 }
 
 func (self *ReactorImpl) ConnectTCP(host string, port int, factory *ProtocolFactory, timeout int) (IProtocol, error) {
-    conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
+    c := NewClientConnector(host, port, timeout)
+    factory.SetConnector(c)
+    conn, err := c.Connect()
     if (err != nil) {
-        logging.Fatal("dial TCP error on ", host, ":", port)
+        factory.ClientConnectionLost(err)
         return nil, err
     }
-    return factory.BuildProtocol(conn.(*net.TCPConn)), nil
+    return factory.BuildProtocol(conn), nil
 }
 
 func newReactorImpl() *ReactorImpl {

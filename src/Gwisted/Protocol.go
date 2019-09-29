@@ -9,7 +9,8 @@ type IDataReceivedHandler interface {
 }
 
 type IConnectionMadeHandler interface {
-    ConnectionMade()
+    ConnectionMade(factory IProtocolFactory)
+
 }
 
 type IConnectionLostHandler interface {
@@ -28,6 +29,7 @@ type IProtocol interface {
 
 type Protocol struct {
     Transport ITransport
+    Factory   IProtocolFactory
     connected int
 
     DataReceivedHandler IDataReceivedHandler
@@ -64,14 +66,14 @@ func (self *Protocol) Start() {
 func (self *Protocol) MakeConnection(transport ITransport) {
     self.connected = 1
     self.Transport = transport
-    self.ConnectionMade()
     self.Start()
 }
 
-func (self *Protocol) ConnectionMade() {
+func (self *Protocol) ConnectionMade(factory IProtocolFactory) {
     if (self.ConnectionMadeHandler != nil) {
-        self.ConnectionMadeHandler.ConnectionMade()
+        self.ConnectionMadeHandler.ConnectionMade(factory)
     } else {
+        self.Factory = factory
         // pass
     }
 }
