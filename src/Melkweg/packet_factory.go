@@ -5,7 +5,7 @@ import (
 )
 
 const (
-    UNKNOWN = 0
+    SYN     = 0
     DATA    = 1
     LIV     = 2
     RST     = 3
@@ -16,12 +16,13 @@ const (
 func NewSynPacket(iv []byte) *MPacket {
     return &MPacket {
         Iv: iv,
+        Flags: SYN,
     }
 }
 
-func NewRstPacket(port uint32) *MPacket {
+func NewRstPacket(port int) *MPacket {
     return &MPacket {
-        Port: port,
+        Port: uint32(port),
         Flags: RST,
     }
 }
@@ -32,18 +33,18 @@ func NewKillPacket() *MPacket {
     }
 }
 
-func NewDataPacket(port uint32, data []byte) *MPacket {
+func NewDataPacket(port int, data []byte) *MPacket {
     return &MPacket {
         Flags: DATA,
-        Port: port,
+        Port: uint32(port),
         Data: data,
     }
 }
 
-func NewFinPacket(port uint32) *MPacket {
+func NewFinPacket(port int) *MPacket {
     return &MPacket {
         Flags: FIN,
-        Port: port,
+        Port: uint32(port),
     }
 }
 
@@ -55,6 +56,8 @@ func NewLivPacket() *MPacket {
 
 func PacketToString(packet *MPacket) string {
     switch packet.Flags {
+    case SYN:
+        return fmt.Sprintf("[Syn Packet]")
     case DATA:
         return fmt.Sprintf("[Data Packet] %d bytes", len(packet.Data))
     case LIV:

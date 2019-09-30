@@ -46,7 +46,7 @@ func NewMelkwegProtocolBase() *MelkwegProtocolBase {
     p := &MelkwegProtocolBase {
         Int32StringReceiver: Gwisted.NewInt32StringReceiver(),
         config: config,
-        Key: DigestString(config.GetKey()),
+        Key: []byte(config.GetKey()),
         Timeout: config.GetTimeout(),
         Iv: DigestBytes(Nonce(19)),
         State: READY,

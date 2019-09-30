@@ -61,11 +61,11 @@ func NewReconnectingClientProtocolFactoryForProtocol(
     return f
 }
 
-func (self *ReconnectingClientProtocolFactory) ClientConnectionLost(reason error) {
+func (self *ReconnectingClientProtocolFactory) ClientConnectionLost(reason string) {
     self.retry()
 }
 
-func (self *ReconnectingClientProtocolFactory) ClientConnectionFailed(reason error) {
+func (self *ReconnectingClientProtocolFactory) ClientConnectionFailed(reason string) {
     self.retry()
 }
 

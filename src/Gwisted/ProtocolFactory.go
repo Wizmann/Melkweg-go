@@ -7,16 +7,16 @@ import (
 type IProtocolFactory interface {
     BuildProtocol(tcp *net.TCPConn) IProtocol
     SetConnector(c IConnector)
-    ClientConnectionLost(reason error)
-    ClientConnectionFailed(reason error)
+    ClientConnectionLost(reason string)
+    ClientConnectionFailed(reason string)
 }
 
 type IClientConnectionLostHandler interface {
-    ClientConnectionLost(reason error)
+    ClientConnectionLost(reason string)
 }
 
 type IClientConnectionFailedHandler interface {
-    ClientConnectionFailed(reason error)
+    ClientConnectionFailed(reason string)
 }
 
 type ProtocolFactory struct {
@@ -58,13 +58,13 @@ func (self *ProtocolFactory) SetConnector(c IConnector) {
     self.connector = c
 }
 
-func (self *ProtocolFactory) ClientConnectionLost(reason error) {
+func (self *ProtocolFactory) ClientConnectionLost(reason string) {
     if (self.ClientConnectionLostHandler != nil) {
         self.ClientConnectionLostHandler.ClientConnectionLost(reason)
     }
 }
 
-func (self *ProtocolFactory) ClientConnectionFailed(reason error) {
+func (self *ProtocolFactory) ClientConnectionFailed(reason string) {
     if (self.ClientConnectionFailedHandler != nil) {
         self.ClientConnectionFailedHandler.ClientConnectionFailed(reason)
     }

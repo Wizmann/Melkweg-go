@@ -1,4 +1,4 @@
-Errorckage Util
+package Util
 
 import (
     "time"

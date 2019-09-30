@@ -28,7 +28,7 @@ func NewClientConnector(host string, port int, timeout int) *ClientConnector {
 func (self *ClientConnector) Connect() (*net.TCPConn, error) {
     conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", self.host, self.port))
     if (err != nil) {
-        logging.Fatal("dial TCP error on ", self.host, ":", self.port)
+        logging.Fatal("dial TCP error on %s:%d", self.host, self.port)
         return nil, err
     }
     return conn.(*net.TCPConn), nil

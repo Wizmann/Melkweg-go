@@ -23,6 +23,7 @@ type IProtocol interface {
     IConnectionLostHandler
 
     MakeConnection(t ITransport)
+    GetTransport() ITransport
     IsConnected() bool
     Start()
 }
@@ -98,4 +99,8 @@ func (self *Protocol) ConnectionLost(reason string) {
 
 func (self *Protocol) IsConnected() bool {
     return self.connected == 1
+}
+
+func (self *Protocol) GetTransport() ITransport {
+    return self.Transport
 }

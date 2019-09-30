@@ -12,7 +12,7 @@ type Config struct {
     ServerAddr string
     ServerPort int
 
-    ClinetPort int
+    ClientPort int
 
     ClientOutgoingConnectionNum int
 }
@@ -45,7 +45,7 @@ func (self *Config) GetServerPort() int {
 }
 
 func (self *Config) GetClientPort() int {
-    return self.ClinetPort
+    return self.ClientPort
 }
 
 func (self *Config) GetClientOutgoingConnectionNum() int {

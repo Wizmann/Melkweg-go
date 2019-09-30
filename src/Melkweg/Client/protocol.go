@@ -1,4 +1,4 @@
-package Client
+package main
 
 import (
     "encoding/hex"
@@ -18,7 +18,7 @@ type MelkwegClientProtocol struct {
 
 func NewMelkwegClientProtocol() IProtocol {
     p := &MelkwegClientProtocol {
-        ProtocolBase: NewProtocolBase(),
+        MelkwegProtocolBase: NewMelkwegProtocolBase(),
         heartbeatTimeout: GetConfigInstance().GetHeartbeatTimeout(),
     }
     p.LineReceivedOnRunningHandler = p
@@ -32,9 +32,10 @@ func (self *MelkwegClientProtocol) ConnectionMade(factory IProtocolFactory) {
     self.Factory = factory
     logging.Info("send iv: %s", hex.EncodeToString(self.Iv))
     self.Write(NewSynPacket(self.Iv))
+    self.Cipher = NewAESCipher(self.Iv, self.Key)
 }
 
-func (self *MelkwegClientProtocol) ConnectionLost(reason error) {
+func (self *MelkwegClientProtocol) ConnectionLost(reason string) {
     logging.Error("connectionLost because %s", reason)
     self.heartbeatTimer.Stop()
     self.TimeoutTimer.Stop()

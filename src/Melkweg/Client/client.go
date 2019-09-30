@@ -20,9 +20,9 @@ func (self *ClientLocalProxyProtocol) DataReceived(data []byte) {
     self.clientProtocol.Write(NewDataPacket(port, data))
 }
 
-func (self *ClientLocalProxyProtocol) ConnectionLost(reason error) {
+func (self *ClientLocalProxyProtocol) ConnectionLost(reason string) {
     port := self.Transport.GetPeer().Port
-    if (reason.Error() == "ConnectionReset") {
+    if (reason == "ConnectionReset") {
         self.clientProtocol.Write(NewRstPacket(port))
     } else {
         self.clientProtocol.Write(NewFinPacket(port))
@@ -59,7 +59,7 @@ func NewClientLocalProxyProtocolFactory() *ClientLocalProxyProtocolFactory {
         factory := NewReconnectingClientProtocolFactoryForProtocol(
             NewMelkwegClientProtocol, 500, 500, 5000, 2.0, -1)
 
-        p, _ := ReactorInstance.ConnectTCP(
+        p, _ := Reactor.ConnectTCP(
             config.GetServerAddr(),
             config.GetServerPort(),
             factory,
@@ -95,7 +95,8 @@ func main() {
     config := GetConfigInstance()
 
     factory := NewClientLocalProxyProtocolFactory()
-    ReactorInstance.ListenTCP(config.GetClientPort(), factory, 50)
+    logging.Info("start TCP for Client on port %d", config.GetClientPort())
+    Reactor.ListenTCP(config.GetClientPort(), factory, 50)
 
-    ReactorInstance.Run()
+    Reactor.Start()
 }
