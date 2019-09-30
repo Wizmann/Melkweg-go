@@ -39,8 +39,8 @@ type AESCipher struct {
     stream cipher.Stream
 }
 
-func NewAESCipher(iv []byte, key[] byte) *AESCipher {
-    block, err := aes.NewCipher(key)
+func NewAESCipher(iv []byte, key []byte) *AESCipher {
+    block, err := aes.NewCipher(DigestBytes(key))
     if (err != nil) {
         panic(err)
     }

@@ -1,0 +1,9 @@
+{
+    "key": "if you stand, if you are true",
+    "timeout": 60000,
+    "heartbeatTimeout": 10000,
+    "serverAddr": "127.0.0.1",
+    "serverPort": 20000,
+    "clientPort": 20011,
+    "clientOutgoingConnectionNum": 1
+}

@@ -12,12 +12,26 @@ var logLevel = NOTSET
 type LogLevel int
 
 const (
-    NOTSET LogLevel  = 0
-    DEBUG LogLevel   = 1
-    INFO LogLevel    = 2
-    WARNING LogLevel = 3
-    FATAL LogLevel   = 4
+    NOTSET   LogLevel = 0
+    VERBOSE  LogLevel = 1
+    DEBUG    LogLevel = 2
+    INFO     LogLevel = 3
+    WARNING  LogLevel = 4
+    ERROR    LogLevel = 5
+    FATAL    LogLevel = 6
 )
+
+func Verbose(format string, a ...interface{}) {
+    if logLevel <= VERBOSE {
+        _, path, lineno, ok := runtime.Caller(1);
+        _, file := filepath.Split(path)
+
+
+        if (ok) {
+            logAux("Verbose", file, lineno, format, a...);
+        }
+    }
+}
 
 func Debug(format string, a ...interface{}) {
     if logLevel <= DEBUG {
@@ -50,7 +64,19 @@ func Warning(format string, a ...interface{}) {
 
 
         if (ok) {
-            logAux("WARNING", file, lineno, format, a...);
+            logAux("Warning", file, lineno, format, a...);
+        }
+    }
+}
+
+func Error(format string, a ...interface{}) {
+    if logLevel <= ERROR {
+        _, path, lineno, ok := runtime.Caller(1);
+        _, file := filepath.Split(path)
+
+
+        if (ok) {
+            logAux("Error", file, lineno, format, a...);
         }
     }
 }
@@ -62,7 +88,7 @@ func Fatal(format string, a ...interface{}) {
 
 
         if (ok) {
-            logAux("FATAL", file, lineno, format, a...);
+            logAux("Fatal", file, lineno, format, a...);
         }
     }
 }
