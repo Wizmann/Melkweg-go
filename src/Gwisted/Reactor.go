@@ -14,7 +14,7 @@ func (self *ReactorImpl) Start() {
     for {
         select {
         case <- self.ctrlCh:
-            break
+            return
         }
     }
 }

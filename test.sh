@@ -2,4 +2,4 @@
 source env.sh
 
 go test Gwisted
-go test Melkweg
+#go test Melkweg

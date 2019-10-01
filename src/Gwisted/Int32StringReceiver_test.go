@@ -29,7 +29,7 @@ func (self *ServerProtocol) ConnectionMade(factory IProtocolFactory) {
 }
 
 func (self *ServerProtocol) LineReceived(data []byte) {
-    logging.Debug("client data received: %x", data)
+    logging.Verbose("client data received: %x", data)
     if (bytes.Compare(data, []byte("pong")) == 0) {
         self.SendLine([]byte("ping"))
     } else if (bytes.Compare(data, []byte("exit")) == 0) {
@@ -46,7 +46,7 @@ type ClientProtocol struct {
 func NewClientProtocol() *ClientProtocol {
     p := &ClientProtocol {
         Int32StringReceiver: NewInt32StringReceiver(),
-        loop: 10,
+        loop: 1000,
     }
     p.LineReceivedHandler = p
 
@@ -54,17 +54,18 @@ func NewClientProtocol() *ClientProtocol {
 }
 
 func (self *ClientProtocol) LineReceived(data []byte) {
-    logging.Debug("client data received: %x", data)
+    logging.Verbose("client data received: %x", data)
     if (bytes.Compare(data, []byte("ping")) == 0) {
-        self.SendLine([]byte("pong"))
-        self.loop -= 1
+        if (self.loop == 0) {
+            self.SendLine([]byte("exit"))
+        } else {
+            self.SendLine([]byte("pong"))
+            self.loop -= 1
+        }
     } else {
         self.Transport.LoseConnection()
     }
-
-    if (self.loop == 0) {
-        self.Transport.LoseConnection()
-    }
+    logging.Warning("loop: %d", self.loop)
 }
 
 
@@ -81,11 +82,11 @@ func TestLineBasedPingPong(t *testing.T) {
     }
 
     Reactor.ListenTCP(
-        12345, ProtocolFactoryForProtocol(serverProtocolCreator), 5)
+        11111, ProtocolFactoryForProtocol(serverProtocolCreator), 5)
     Reactor.ConnectTCP(
-        "localhost", 12345, ProtocolFactoryForProtocol(clientProtocolCreator), 1000)
+        "localhost", 11111, ProtocolFactoryForProtocol(clientProtocolCreator), 1000)
 
-    for i := 0; i < 3; i++ {
+    for i := 0; i < 1000; i++ {
         if (clientProtocol.loop == 0) {
             break
         }

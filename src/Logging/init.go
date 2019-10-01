@@ -8,7 +8,7 @@ import (
     "os"
 )
 
-var logLevel = NOTSET
+var logLevel = VERBOSE
 
 type LogLevel int
 

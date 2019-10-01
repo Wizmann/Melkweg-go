@@ -1,6 +1,7 @@
 package Gwisted
 
 import (
+    _ "io"
     logging "Logging"
 )
 
@@ -54,12 +55,12 @@ func (self *Protocol) Start() {
     go func() {
         for {
             n, err := self.Transport.GetConnection().Read(buf)
-            if (err == nil) {
-                self.DataReceived(buf[:n])
-            } else {
+            if err != nil {
+                logging.Error("error: %s, n: %d", err.Error(), n)
                 self.ConnectionLost(err.Error())
                 break
             }
+            self.DataReceived(buf[:n])
         }
     }()
 }
@@ -80,7 +81,7 @@ func (self *Protocol) ConnectionMade(factory IProtocolFactory) {
 }
 
 func (self *Protocol) DataReceived(data []byte) {
-    logging.Debug("DataReceived: %x", data)
+    logging.Verbose("DataReceived: %d", len(data))
     if (self.DataReceivedHandler != nil) {
         self.DataReceivedHandler.DataReceived(data)
     } else {
@@ -89,7 +90,9 @@ func (self *Protocol) DataReceived(data []byte) {
 }
 
 func (self *Protocol) ConnectionLost(reason string) {
+    logging.Debug("connection lost")
     self.connected = 0
+    self.GetTransport().LoseConnection()
     if (self.ConnectionLostHandler != nil) {
         self.ConnectionLostHandler.ConnectionLost(reason)
     } else {

@@ -1,7 +1,8 @@
 {
+    "logLevel": "INFO",
     "key": "if you stand, if you are true",
     "timeout": 60000,
-    "heartbeatTimeout": 3000,
+    "heartbeatTimeout": 1000,
     "serverAddr": "127.0.0.1",
     "serverPort": 20000,
     "clientPort": 20011,

@@ -29,7 +29,7 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    logging.Debug("DataReceived: %x", data)
+    logging.Verbose("DataReceived: %x", data)
     if (len(data) + self.buffer.Len() > self.maxLength) {
         logging.Warning("String length error for IntNStringReceiver Protocol: %d", len(data) + self.buffer.Len())
         self.lengthLimitExceeded()
@@ -38,7 +38,7 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 
     self.buffer.Write(data)
 
-    logging.Debug("Line length: %d", self.strSize)
+    logging.Verbose("Line length: %d", self.strSize)
 
     if (self.strSize == 0 && self.buffer.Len() >= self.prefixSize) {
         prefixBytes := make([]byte, self.prefixSize)
@@ -65,7 +65,7 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
-    logging.Debug("LineReceived: %x", data)
+    logging.Verbose("LineReceived: %x", data)
     if (self.LineReceivedHandler != nil) {
         self.LineReceivedHandler.LineReceived(data);
     } else {
@@ -90,7 +90,7 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
     }
 
     prefix := make([]byte, self.prefixSize)
-    logging.Debug("length of data: %d", len(data))
+    logging.Verbose("length of data: %d", len(data))
     self.makePrefix(prefix, len(data))
     self.Transport.Write(append(prefix, data...))
     return nil;
