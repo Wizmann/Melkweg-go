@@ -76,16 +76,16 @@ func TestPingPongProtocol(t *testing.T) {
         ProtocolFactoryForProtocol(func() IProtocol { return client }),
         60)
 
-    time.Sleep(time.Millisecond * 10)
+    time.Sleep(time.Millisecond * 1000)
 
-    for i := 0; i <= 3; i++ {
+    for i := 0; i <= 10; i++ {
         if (server.connected == 0 && client.connected == 0) {
             break;
         }
-        if (i == 3) {
+        if (i == 10) {
             t.Error();
         }
-        time.Sleep(time.Millisecond * 50)
+        time.Sleep(time.Millisecond * 500)
     }
 }
 
@@ -149,20 +149,20 @@ func TestIntNLineProtocol(t *testing.T) {
     time.Sleep(time.Millisecond * 10)
 
     Reactor.ConnectTCP(
-        "", 
-        10000, 
+        "",
+        10000,
         ProtocolFactoryForProtocol(func() IProtocol { return client }),
         60)
 
-    time.Sleep(time.Millisecond * 10)
+    time.Sleep(time.Millisecond * 1000)
 
-    for i := 0; i <= 3; i++ {
+    for i := 0; i <= 10; i++ {
         if (server.connected == 0 && client.connected == 0) {
-            break;
+            break
         }
-        if (i == 3) {
-            t.Error();
+        if (i == 10) {
+            t.Error("server or client connection is still open")
         }
-        time.Sleep(time.Millisecond * 50)
+        time.Sleep(time.Millisecond * 500)
     }
 }

@@ -45,6 +45,7 @@ func NewTransport(conn *net.TCPConn, protocol IProtocol) *Transport {
 func (self *Transport) DoWrite(data []byte) {
     if (!self.protocol.IsConnected()) {
         logging.Error("Connection is finished or reset")
+        self.LoseConnection()
         return
     }
 
@@ -72,6 +73,8 @@ func (self *Transport) Write(data []byte) error {
 
 func (self *Transport) LoseConnection() {
     logging.Debug("lose connection")
+    self.conn.Close()
+    self.protocol.ConnectionLost("LoseConnection")
 }
 
 func (self *Transport) GetPeer() *net.TCPAddr {

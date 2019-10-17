@@ -38,8 +38,6 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 
     self.buffer.Write(data)
 
-    logging.Verbose("Line length: %d", self.strSize)
-
     if (self.strSize == 0 && self.buffer.Len() >= self.prefixSize) {
         prefixBytes := make([]byte, self.prefixSize)
         self.buffer.Read(prefixBytes)
@@ -93,7 +91,7 @@ func (self *IntNStringReceiver) SendLine(data []byte) error {
     logging.Verbose("length of data: %d", len(data))
     self.makePrefix(prefix, len(data))
     self.Transport.Write(append(prefix, data...))
-    return nil;
+    return nil
 }
 
 type Int32StringReceiver struct {

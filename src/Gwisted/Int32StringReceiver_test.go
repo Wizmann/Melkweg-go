@@ -46,7 +46,7 @@ type ClientProtocol struct {
 func NewClientProtocol() *ClientProtocol {
     p := &ClientProtocol {
         Int32StringReceiver: NewInt32StringReceiver(),
-        loop: 1000,
+        loop: 100,
     }
     p.LineReceivedHandler = p
 
@@ -83,6 +83,9 @@ func TestLineBasedPingPong(t *testing.T) {
 
     Reactor.ListenTCP(
         11111, ProtocolFactoryForProtocol(serverProtocolCreator), 5)
+
+    time.Sleep(time.Duration(100) * time.Millisecond)
+
     Reactor.ConnectTCP(
         "localhost", 11111, ProtocolFactoryForProtocol(clientProtocolCreator), 1000)
 

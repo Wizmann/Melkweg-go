@@ -91,8 +91,10 @@ func (self *Protocol) DataReceived(data []byte) {
 
 func (self *Protocol) ConnectionLost(reason string) {
     logging.Debug("connection lost")
+    if (self.connected == 0) {
+        // pass
+    }
     self.connected = 0
-    self.GetTransport().LoseConnection()
     if (self.ConnectionLostHandler != nil) {
         self.ConnectionLostHandler.ConnectionLost(reason)
     } else {

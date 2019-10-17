@@ -5,6 +5,8 @@ import (
     "path/filepath"
     "fmt"
     "time"
+    "strings"
+    "strconv"
     "os"
 )
 
@@ -21,6 +23,17 @@ const (
     ERROR    LogLevel = 5
     FATAL    LogLevel = 6
 )
+
+func GetGoroutineID() int {
+    var buf [64]byte
+    n := runtime.Stack(buf[:], false)
+    idField := strings.Fields(strings.TrimPrefix(string(buf[:n]), "goroutine "))[0]
+    id, err := strconv.Atoi(idField)
+    if err != nil {
+        panic(fmt.Sprintf("cannot get goroutine id: %v", err))
+    }
+    return id
+}
 
 func Verbose(format string, a ...interface{}) {
     if logLevel <= VERBOSE {
@@ -64,7 +77,8 @@ func logAux(level string, format string, a ...interface{}) {
     relpath, _ := filepath.Rel(wd, path)
 
     t := time.Now();
-    a = append([]interface{} { level, t.Format("2006-01-02 15:04:05.00"), relpath, lineno }, a...);
-    fmt.Printf("[%s] %s [%s:%d] " + format + "\n", a...);
+    goid := GetGoroutineID()
+    a = append([]interface{} { level, t.Format("2006-01-02 15:04:05.00"), goid, relpath, lineno }, a...);
+    fmt.Printf("[%s] %s [T%d][%s:%d] " + format + "\n", a...);
 }
 
