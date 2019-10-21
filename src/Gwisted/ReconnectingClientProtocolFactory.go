@@ -81,6 +81,7 @@ func (self *ReconnectingClientProtocolFactory) retry() {
     }
     self.delay = delay
 
+    logging.Warning("reconnect after %d ms", self.delay)
     time.AfterFunc(time.Millisecond * time.Duration(delay), self.reconnect)
 }
 

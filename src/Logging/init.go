@@ -10,19 +10,44 @@ import (
     "os"
 )
 
-var logLevel = INFO
+var LogLevel = INFO
 
-type LogLevel int
+type ELogLevel int
 
 const (
-    NOTSET   LogLevel = 0
-    VERBOSE  LogLevel = 1
-    DEBUG    LogLevel = 2
-    INFO     LogLevel = 3
-    WARNING  LogLevel = 4
-    ERROR    LogLevel = 5
-    FATAL    LogLevel = 6
+    NOTSET   ELogLevel = 0
+    VERBOSE  ELogLevel = 1
+    DEBUG    ELogLevel = 2
+    INFO     ELogLevel = 3
+    WARNING  ELogLevel = 4
+    ERROR    ELogLevel = 5
+    FATAL    ELogLevel = 6
 )
+
+func init() {
+    envVar := os.Getenv("Melkweg-Logging")
+    envVar = strings.ToUpper(envVar)
+
+    if (envVar == "NOTSET") {
+        LogLevel = 0
+    } else if (envVar == "VERBOSE") {
+        LogLevel = 1
+    } else if (envVar == "DEBUG") {
+        LogLevel = 2
+    } else if (envVar == "INFO") {
+        LogLevel = 3
+    } else if (envVar == "WARNING") {
+        LogLevel = 4
+    } else if (envVar == "ERROR") {
+        LogLevel = 5
+    } else if (envVar == "FATAL") {
+        LogLevel = 6
+    } else if (envVar == "") {
+        /* pass */
+    } else {
+        fmt.Printf("[%s] is not a valid log level")
+    }
+}
 
 func GetGoroutineID() int {
     var buf [64]byte
@@ -36,37 +61,37 @@ func GetGoroutineID() int {
 }
 
 func Verbose(format string, a ...interface{}) {
-    if logLevel <= VERBOSE {
+    if LogLevel <= VERBOSE {
         logAux("Verbose", format, a...)
     }
 }
 
 func Debug(format string, a ...interface{}) {
-    if logLevel <= DEBUG {
+    if LogLevel <= DEBUG {
         logAux("Debug", format, a...)
     }
 }
 
 func Info(format string, a ...interface{}) {
-    if logLevel <= INFO {
+    if LogLevel <= INFO {
         logAux("Info", format, a...)
     }
 }
 
 func Warning(format string, a ...interface{}) {
-    if logLevel <= WARNING {
+    if LogLevel <= WARNING {
         logAux("Warning", format, a...)
     }
 }
 
 func Error(format string, a ...interface{}) {
-    if logLevel <= ERROR {
+    if LogLevel <= ERROR {
         logAux("Error", format, a...)
     }
 }
 
 func Fatal(format string, a ...interface{}) {
-    if logLevel <= FATAL {
+    if LogLevel <= FATAL {
         logAux("Fatal", format, a...);
     }
 }

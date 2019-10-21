@@ -3,10 +3,13 @@ package main
 import (
     "encoding/json"
     . "Melkweg"
+    logging "Logging"
     "os"
 )
 
 func init() {
+    logging.LogLevel = logging.INFO;
+
     file, err := os.Open("config.json")
     if (err != nil) {
         panic("can't open config.json file")
