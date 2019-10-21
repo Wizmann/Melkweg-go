@@ -10,7 +10,7 @@ import (
     "os"
 )
 
-var logLevel = VERBOSE
+var logLevel = INFO
 
 type LogLevel int
 

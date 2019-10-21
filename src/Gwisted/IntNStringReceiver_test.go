@@ -17,7 +17,7 @@ func NewMyLineReceiver() *MyLineReceiver {
     r := &MyLineReceiver {
         IntNStringReceiver: IntNStringReceiver {
             buffer: bytes.NewBuffer(buffer),
-            strSize: 0,
+            strSize: -1,
             prefixSize: 4,
             parsePrefix: func(buffer []byte) int {
                 return int(binary.BigEndian.Uint32(buffer))

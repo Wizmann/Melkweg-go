@@ -3,6 +3,7 @@ package Gwisted
 import (
     _ "io"
     logging "Logging"
+    Utils "Gwisted/Utils"
 )
 
 type IDataReceivedHandler interface {
@@ -54,13 +55,18 @@ func (self *Protocol) Start() {
     buf := make([]byte, 65536)
     go func() {
         for {
+            before_t := Utils.GetTimestamp()
             n, err := self.Transport.GetConnection().Read(buf)
             if err != nil {
-                logging.Error("error: %s, n: %d", err.Error(), n)
-                self.ConnectionLost(err.Error())
+                self.Transport.LoseConnection()
+                after_t := Utils.GetTimestamp()
+                logging.Error("error: %s, n: %d, t: %d", err.Error(), n, after_t - before_t)
                 break
             }
             self.DataReceived(buf[:n])
+
+            after_t := Utils.GetTimestamp()
+            logging.Debug("time spend on Protocol Read is %d ms", after_t - before_t)
         }
     }()
 }

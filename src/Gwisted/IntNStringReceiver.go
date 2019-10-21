@@ -29,7 +29,8 @@ type IntNStringReceiver struct {
 }
 
 func (self *IntNStringReceiver) DataReceived(data []byte) {
-    logging.Verbose("DataReceived: %x", data)
+    logging.Debug("DataReceived: %d", len(data))
+
     if (len(data) + self.buffer.Len() > self.maxLength) {
         logging.Warning("String length error for IntNStringReceiver Protocol: %d", len(data) + self.buffer.Len())
         self.lengthLimitExceeded()
@@ -38,28 +39,33 @@ func (self *IntNStringReceiver) DataReceived(data []byte) {
 
     self.buffer.Write(data)
 
-    if (self.strSize == 0 && self.buffer.Len() >= self.prefixSize) {
-        prefixBytes := make([]byte, self.prefixSize)
-        self.buffer.Read(prefixBytes)
-        self.strSize = self.parsePrefix(prefixBytes)
+    for {
+        if (self.strSize == -1 && self.buffer.Len() >= self.prefixSize) {
+            prefixBytes := make([]byte, self.prefixSize)
+            self.buffer.Read(prefixBytes)
+            self.strSize = self.parsePrefix(prefixBytes)
 
-        if (self.strSize > self.maxLength) {
-            logging.Warning("String length error for IntNStringReceiver Protocol: %d", self.strSize)
-            self.lengthLimitExceeded()
-            return;
+            if (self.strSize > self.maxLength) {
+                logging.Warning("String length error for IntNStringReceiver Protocol: %d", self.strSize)
+                self.lengthLimitExceeded()
+                return;
+            }
         }
+
+        logging.Debug("buffer status, buffer length %d, strSize %d", self.buffer.Len(), self.strSize);
+
+        if (self.strSize == -1 || self.buffer.Len() < self.strSize) {
+            logging.Debug("buffer not ready, buffer length %d, strSize %d", self.buffer.Len(), self.strSize);
+            return
+        }
+
+        lineData := make([]byte, self.strSize)
+        self.buffer.Read(lineData)
+
+        self.LineReceived(lineData)
+
+        self.strSize = -1
     }
-
-    if (self.buffer.Len() < self.strSize) {
-        return
-    }
-
-    lineData := make([]byte, self.strSize)
-    self.buffer.Read(lineData)
-
-    self.LineReceived(lineData)
-
-    self.strSize = 0
 }
 
 func (self *IntNStringReceiver) LineReceived(data []byte) {
@@ -103,7 +109,7 @@ func NewInt32StringReceiver() *Int32StringReceiver {
         IntNStringReceiver: IntNStringReceiver {
             Protocol: NewProtocol(),
             buffer: bytes.NewBuffer([]byte("")),
-            strSize: 0,
+            strSize: -1,
             prefixSize: 4,
             parsePrefix: func(buffer []byte) int {
                 return int(binary.BigEndian.Uint32(buffer))

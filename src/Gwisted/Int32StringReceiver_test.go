@@ -46,7 +46,7 @@ type ClientProtocol struct {
 func NewClientProtocol() *ClientProtocol {
     p := &ClientProtocol {
         Int32StringReceiver: NewInt32StringReceiver(),
-        loop: 100,
+        loop: 10,
     }
     p.LineReceivedHandler = p
 

@@ -4,6 +4,7 @@ import (
     "net"
     "errors"
     logging "Logging"
+    Utils "Melkweg/Utils"
 )
 
 type ITransport interface {
@@ -24,8 +25,8 @@ type Transport struct {
 func NewTransport(conn *net.TCPConn, protocol IProtocol) *Transport {
     t := &Transport {
         conn: conn,
-        queue: make(chan []byte, 100000000),
-        ctrlCh: make(chan int, 1000000),
+        queue: make(chan []byte, 1000),
+        ctrlCh: make(chan int),
         protocol: protocol,
     }
 
@@ -43,6 +44,7 @@ func NewTransport(conn *net.TCPConn, protocol IProtocol) *Transport {
 }
 
 func (self *Transport) DoWrite(data []byte) {
+    before_t := Utils.GetTimestamp()
     if (!self.protocol.IsConnected()) {
         logging.Error("Connection is finished or reset")
         self.LoseConnection()
@@ -50,9 +52,9 @@ func (self *Transport) DoWrite(data []byte) {
     }
 
     p := 0
-    len := len(data)
+    n := len(data)
 
-    for p < len {
+    for p < n {
         delta, err := self.conn.Write(data[p:])
         if (err != nil) {
             logging.Error(err.Error())
@@ -61,6 +63,8 @@ func (self *Transport) DoWrite(data []byte) {
         }
         p += delta
     }
+    after_t := Utils.GetTimestamp()
+    logging.Debug("DoWrite cost time: %d ms", after_t - before_t)
 }
 
 func (self *Transport) Write(data []byte) error {
