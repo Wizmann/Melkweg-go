@@ -11,6 +11,7 @@ import (
 )
 
 var LogLevel = INFO
+var curDir = ""
 
 type ELogLevel int
 
@@ -47,6 +48,9 @@ func init() {
     } else {
         fmt.Printf("[%s] is not a valid log level")
     }
+
+    _, fileName, _, _ := runtime.Caller(0)
+    curDir = filepath.ToSlash(filepath.Dir(filepath.Dir(fileName))) + "/"
 }
 
 func GetGoroutineID() int {
@@ -98,8 +102,7 @@ func Fatal(format string, a ...interface{}) {
 
 func logAux(level string, format string, a ...interface{}) {
     _, path, lineno, _ := runtime.Caller(2);
-    wd, _ := os.Getwd()
-    relpath, _ := filepath.Rel(wd, path)
+    relpath, _ := filepath.Rel(curDir, path)
 
     t := time.Now();
     goid := GetGoroutineID()
