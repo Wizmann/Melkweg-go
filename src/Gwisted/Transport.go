@@ -77,6 +77,7 @@ func (self *Transport) Write(data []byte) error {
 
 func (self *Transport) LoseConnection() {
     logging.Debug("lose connection")
+    self.ctrlCh <- -1
     self.conn.Close()
     self.protocol.ConnectionLost("LoseConnection")
 }
