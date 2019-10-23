@@ -5,9 +5,12 @@ import (
     . "Gwisted"
     . "Melkweg"
     "time"
+    "sync"
     Utils "Melkweg/Utils"
     logging "Logging"
 )
+
+type Map = sync.Map
 
 type MelkwegClientProtocol struct {
     *MelkwegProtocolBase
