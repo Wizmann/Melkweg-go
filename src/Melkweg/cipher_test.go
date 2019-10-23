@@ -21,7 +21,7 @@ func TestAESCipher(t *testing.T) {
     cipher1 := NewAESCipher(iv, DigestString("hello world"))
     cipher2 := NewAESCipher(iv, DigestString("hello world"))
 
-    encrypted := cipher1.Encrypt([]byte())
+    encrypted := cipher1.Encrypt([]byte(""))
     decrypted := cipher2.Decrypt(encrypted)
 
     encrypted = cipher1.Encrypt([]byte("foo"))

@@ -19,5 +19,5 @@ bin/
 src/github.com
 src/golang.org
 output/
-
+output_win/
 config.json

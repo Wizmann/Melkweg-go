@@ -51,12 +51,18 @@ func NewAESCipher(iv []byte, key []byte) *AESCipher {
 }
 
 func (cipher *AESCipher) Encrypt(buffer []byte) []byte {
+    if len(buffer) <= 0 {
+        return make([]byte, 0)
+    }
     encrypted := make([]byte, len(buffer))
     cipher.stream.XORKeyStream(encrypted, buffer)
     return encrypted
 }
 
 func (cipher *AESCipher) Decrypt(buffer []byte) []byte {
+    if len(buffer) <= 0 {
+        return make([]byte, 0)
+    }
     decrypted := make([]byte, len(buffer))
     cipher.stream.XORKeyStream(decrypted, buffer)
     return decrypted
