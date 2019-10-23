@@ -19,3 +19,5 @@ bin/
 src/github.com
 src/golang.org
 output/
+
+config.json
