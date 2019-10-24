@@ -54,16 +54,22 @@ func NewClientLocalProxyProtocolFactory() *ClientLocalProxyProtocolFactory {
     f.ProtocolFactory = NewProtocolFactory(f.BuildProtocol)
 
     f.outgoing = make([]*MelkwegClientProtocol, n)
-    for i := 0; i < n; i++ {
-        factory := NewReconnectingClientProtocolFactoryForProtocol(
-            NewMelkwegClientProtocol, 500, 500, 5000, 2.0, -1)
 
-        p, _ := Reactor.ConnectTCP(
+    for i := 0; i < n; i++ {
+        idx := i
+        protocolBuilder := func() IProtocol {
+            p := NewMelkwegClientProtocol()
+            f.outgoing[idx] = p.(*MelkwegClientProtocol)
+            return p
+        }
+        factory := NewReconnectingClientProtocolFactoryForProtocol(
+            protocolBuilder, 500, 500, 5000, 2.0, -1)
+
+        Reactor.ConnectTCP(
             config.GetServerAddr(),
             config.GetServerPort(),
             factory,
             -1)
-        f.outgoing[i] = p.(*MelkwegClientProtocol)
     }
     return f
 }
