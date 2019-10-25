@@ -3,6 +3,7 @@ package Melkweg
 import (
     logging "Logging"
     "time"
+    "sync"
     "Gwisted"
     proto "github.com/golang/protobuf/proto"
 )
