@@ -36,6 +36,7 @@ type MelkwegProtocolBase struct {
     Timeout      int
     TimeoutTimer *time.Timer
     config       *Config
+    mu           sync.Mutex
 
     LineReceivedOnRunningHandler  ILineReceivedOnRunningHandler
     LineReceivedOnReadyHandler    ILineReceivedOnReadyHandler
@@ -63,6 +64,8 @@ func NewMelkwegProtocolBase() *MelkwegProtocolBase {
 }
 
 func (self *MelkwegProtocolBase) Write(packet *MPacket) error {
+    self.mu.Lock()
+    defer self.mu.Unlock()
     data, err := proto.Marshal(packet)
     if (err != nil) {
         return err
