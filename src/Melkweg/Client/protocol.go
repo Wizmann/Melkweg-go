@@ -15,14 +15,16 @@ type Map = sync.Map
 type MelkwegClientProtocol struct {
     *MelkwegProtocolBase
 
+    config *ProxyConfig
     heartbeatTimeout int
     heartbeatTimer *time.Timer
 }
 
-func NewMelkwegClientProtocol() IProtocol {
+func NewMelkwegClientProtocol(config *ProxyConfig) IProtocol {
     p := &MelkwegClientProtocol {
-        MelkwegProtocolBase: NewMelkwegProtocolBase(),
-        heartbeatTimeout: GetConfigInstance().GetHeartbeatTimeout(),
+        config: config,
+        MelkwegProtocolBase: NewMelkwegProtocolBase(config),
+        heartbeatTimeout: config.GetHeartbeatTimeout(),
     }
     p.LineReceivedOnRunningHandler = p
     p.LineReceivedOnReadyHandler = p
@@ -87,8 +89,8 @@ func (self *MelkwegClientProtocol) LineReceivedOnRunning(packet *MPacket) {
         }
     } else if (packet.GetFlags() == LIV) {
         prevTime := packet.GetClientTime()
-        logging.Info("[HEARTBEAT] ping = %d ms", Utils.GetTimestamp() - prevTime)
-        logging.Debug("[HEARTBEAT] get ping = %d, server = %d, now = %d", 
+        logging.Info("[%s - HEARTBEAT] ping = %d ms", self.config.GetName(), Utils.GetTimestamp() - prevTime)
+        logging.Debug("[HEARTBEAT] get ping = %d, server = %d, now = %d",
                 packet.GetClientTime(),
                 packet.GetServerTime(),
                 Utils.GetTimestamp());

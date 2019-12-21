@@ -5,9 +5,15 @@ import (
 )
 
 type Config struct {
+    ProxyConfigs []ProxyConfig
+}
+
+type ProxyConfig struct {
     Key string
     Timeout int
     HeartbeatTimeout int
+
+    Name string
 
     ServerAddr string
     ServerPort int
@@ -24,31 +30,35 @@ func newConfig() *Config {
     return &Config {}
 }
 
-func (self *Config) GetKey() string {
+func (self *ProxyConfig) GetKey() string {
     return self.Key
 }
 
-func (self *Config) GetTimeout() int {
+func (self *ProxyConfig) GetTimeout() int {
     return self.Timeout
 }
 
-func (self *Config) GetHeartbeatTimeout() int {
+func (self *ProxyConfig) GetName() string {
+    return self.Name
+}
+
+func (self *ProxyConfig) GetHeartbeatTimeout() int {
     return self.HeartbeatTimeout
 }
 
-func (self *Config) GetServerAddr() string {
+func (self *ProxyConfig) GetServerAddr() string {
     return self.ServerAddr
 }
 
-func (self *Config) GetServerPort() int {
+func (self *ProxyConfig) GetServerPort() int {
     return self.ServerPort
 }
 
-func (self *Config) GetClientPort() int {
+func (self *ProxyConfig) GetClientPort() int {
     return self.ClientPort
 }
 
-func (self *Config) GetClientOutgoingConnectionNum() int {
+func (self *ProxyConfig) GetClientOutgoingConnectionNum() int {
     return self.ClientOutgoingConnectionNum
 }
 

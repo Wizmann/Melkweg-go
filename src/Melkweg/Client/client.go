@@ -42,15 +42,16 @@ func NewClientLocalProxyProtocol(clientProtocol *MelkwegClientProtocol) *ClientL
 
 type ClientLocalProxyProtocolFactory struct {
     *ProtocolFactory
+    Config *ProxyConfig
     outgoing []*MelkwegClientProtocol
 }
 
-func NewClientLocalProxyProtocolFactory() *ClientLocalProxyProtocolFactory {
-    config := GetConfigInstance()
+func NewClientLocalProxyProtocolFactory(config ProxyConfig) *ClientLocalProxyProtocolFactory {
     logging.Debug("server addr: %s, server port: %d", config.GetServerAddr(), config.GetServerPort())
     n := config.GetClientOutgoingConnectionNum()
 
     f := &ClientLocalProxyProtocolFactory {}
+    f.Config = &config
     f.ProtocolFactory = NewProtocolFactory(f.BuildProtocol)
 
     f.outgoing = make([]*MelkwegClientProtocol, n)
@@ -58,7 +59,7 @@ func NewClientLocalProxyProtocolFactory() *ClientLocalProxyProtocolFactory {
     for i := 0; i < n; i++ {
         idx := i
         protocolBuilder := func() IProtocol {
-            p := NewMelkwegClientProtocol()
+            p := NewMelkwegClientProtocol(f.Config)
             f.outgoing[idx] = p.(*MelkwegClientProtocol)
             return p
         }
@@ -99,9 +100,11 @@ func main() {
 
     config := GetConfigInstance()
 
-    factory := NewClientLocalProxyProtocolFactory()
-    logging.Info("start TCP for Client on port %d", config.GetClientPort())
-    Reactor.ListenTCP(config.GetClientPort(), factory, 50)
+    for _, proxyConfig := range config.ProxyConfigs {
+        factory := NewClientLocalProxyProtocolFactory(proxyConfig)
+        logging.Info("start TCP for Client on port %d", proxyConfig.GetClientPort())
+        Reactor.ListenTCP(proxyConfig.GetClientPort(), factory, 50)
+    }
 
     Reactor.Start()
 }

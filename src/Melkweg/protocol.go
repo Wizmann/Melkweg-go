@@ -36,15 +36,14 @@ type MelkwegProtocolBase struct {
     Outgoing     map[int]Gwisted.IProtocol
     Timeout      int
     TimeoutTimer *time.Timer
-    config       *Config
+    config       *ProxyConfig
     mu           sync.Mutex
 
     LineReceivedOnRunningHandler  ILineReceivedOnRunningHandler
     LineReceivedOnReadyHandler    ILineReceivedOnReadyHandler
 }
 
-func NewMelkwegProtocolBase() *MelkwegProtocolBase {
-    config := GetConfigInstance()
+func NewMelkwegProtocolBase(config *ProxyConfig) *MelkwegProtocolBase {
     p := &MelkwegProtocolBase {
         Int32StringReceiver: Gwisted.NewInt32StringReceiver(),
         config: config,
