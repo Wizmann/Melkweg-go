@@ -30,6 +30,7 @@ type MelkwegProtocolBase struct {
 
     Key          []byte
     Iv           []byte
+    CipherType   string
     Cipher       ICipher
     PeerCipher   ICipher
     State        ProtocolState
@@ -49,12 +50,13 @@ func NewMelkwegProtocolBase(config *ProxyConfig) *MelkwegProtocolBase {
         config: config,
         Key: []byte(config.GetKey()),
         Timeout: config.GetTimeout(),
-        Iv: DigestBytes(Nonce(19)),
+        Iv: DigestBytes(Nonce(19), 16),
         State: READY,
         Outgoing: map[int]Gwisted.IProtocol{},
+        CipherType: config.GetCipherType(),
     }
     p.LineReceivedHandler = p
-    p.Cipher = NewAESCipher(p.Iv, p.Key)
+    p.Cipher = CipherFactory(config.GetCipherType(), p.Iv, p.Key)
     p.ConnectionMadeHandler = p
     p.ConnectionLostHandler = p
 

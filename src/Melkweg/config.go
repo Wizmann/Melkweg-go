@@ -14,6 +14,7 @@ type ProxyConfig struct {
     HeartbeatTimeout int
 
     Name string
+    Cipher string
 
     ServerAddr string
     ServerPort int
@@ -60,6 +61,10 @@ func (self *ProxyConfig) GetClientPort() int {
 
 func (self *ProxyConfig) GetClientOutgoingConnectionNum() int {
     return self.ClientOutgoingConnectionNum
+}
+
+func (self *ProxyConfig) GetCipherType() string {
+    return self.Cipher
 }
 
 func GetConfigInstance() *Config {

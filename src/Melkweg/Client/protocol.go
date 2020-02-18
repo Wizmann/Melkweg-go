@@ -37,15 +37,24 @@ func (self *MelkwegClientProtocol) ConnectionMade(factory IProtocolFactory) {
     self.Factory = factory
     logging.Info("send iv: %s", hex.EncodeToString(self.Iv))
     self.Write(NewSynPacket(self.Iv))
-    self.Cipher = NewAESCipher(self.Iv, self.Key)
+    self.Cipher = CipherFactory(self.CipherType, self.Iv, self.Key)
 }
 
 func (self *MelkwegClientProtocol) ConnectionLost(reason string) {
     logging.Error("connectionLost because %s", reason)
-    self.heartbeatTimer.Stop()
-    self.TimeoutTimer.Stop()
+    if (self.heartbeatTimer != nil) {
+        self.heartbeatTimer.Stop()
+    }
+
+    if (self.TimeoutTimer != nil) {
+        self.TimeoutTimer.Stop()
+    }
+
     for _, protocol := range self.Outgoing {
-        protocol.GetTransport().LoseConnection()
+        transport := protocol.GetTransport()
+        if (transport != nil) {
+            transport.LoseConnection()
+        }
     }
 
     if (self.Factory != nil) {
@@ -66,7 +75,7 @@ func (self *MelkwegClientProtocol) HandleDataPacket(packet *MPacket) {
 
 func (self *MelkwegClientProtocol) LineReceivedOnReady(packet *MPacket) {
     if (packet.GetIv() != nil) {
-        self.PeerCipher = NewAESCipher(packet.GetIv(), self.Key)
+        self.PeerCipher = CipherFactory(self.CipherType, packet.GetIv(), self.Key)
         logging.Info("get iv: %s from %s", hex.EncodeToString(packet.GetIv()), self.GetTransport().GetPeer())
         self.State = RUNNING
         self.ResetTimeout()

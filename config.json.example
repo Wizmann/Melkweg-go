@@ -5,6 +5,7 @@
             "logLevel": "INFO",
             "key": "if you stand, if you are true",
             "timeout": 60000,
+            "cipher": "AESHMac",
             "heartbeatTimeout": 5000,
             "serverAddr": "127.0.0.1",
             "serverPort": 20000,
