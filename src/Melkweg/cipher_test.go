@@ -11,15 +11,15 @@ func TestDigest(t *testing.T) {
     str := "hello world"
     bin := []byte(str)
 
-    if (bytes.Compare(DigestString(str), DigestBytes(bin)) != 0) {
+    if (bytes.Compare(DigestString(str, len(str)), DigestBytes(bin, len(bin))) != 0) {
         t.Error()
     }
 }
 
 func TestAESCipher(t *testing.T) {
-    iv := DigestBytes(Nonce(100))
-    cipher1 := NewAESCipher(iv, DigestString("hello world"))
-    cipher2 := NewAESCipher(iv, DigestString("hello world"))
+    iv := DigestBytes(Nonce(100), 16)
+    cipher1 := NewAESCipher(iv, DigestString("hello world", 8))
+    cipher2 := NewAESCipher(iv, DigestString("hello world", 8))
 
     encrypted := cipher1.Encrypt([]byte(""))
     decrypted := cipher2.Decrypt(encrypted)
@@ -47,7 +47,7 @@ func TestAESCipherCorrectness(t *testing.T) {
     encrypted1 := cipher.Encrypt([]byte("hello"))
     fmt.Println(hex.EncodeToString(encrypted1))
 
-    encrypted2 := "ae588a2b2b"
+    encrypted2 := "a49fc81109"
 
     if (hex.EncodeToString(encrypted1) != encrypted2) {
         t.Errorf("%s not equal to %s", hex.EncodeToString(encrypted1), encrypted2)
